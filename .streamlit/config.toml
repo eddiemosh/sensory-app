@@ -1,0 +1,8 @@
+[server]
+# Only this computer can open the app when it is run locally.
+address = "localhost"
+# Size in MB. Keeps one large file from exhausting a hosted app's memory.
+maxUploadSize = 60
+
+[browser]
+gatherUsageStats = false

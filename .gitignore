@@ -9,10 +9,16 @@ venv/
 # Local data and model caches (large; download locally)
 data/
 *.wav
+*.mp3
+*.flac
+*.ogg
+*.webm
+*.m4a
 *.tar.gz
 tfhub_cache/
 
 # Editors and OS
+.claude/
 .vscode/
 .idea/
 .DS_Store

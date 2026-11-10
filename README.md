@@ -28,11 +28,35 @@ python -m pip install --upgrade pip
 pip install -r requirements-dev.txt
 ```
 
+## Running the proof of concept
+
+YAMNet is downloaded the first time it is used.
+
+```bash
+streamlit run app.py
+```
+
+To print the top five classes for one file:
+
+```bash
+python scripts/yamnet_top5.py path/to/audio.wav
+```
+
+## Hosting
+
+The app can be hosted on Streamlit Community Cloud with `app.py` as the entry
+point and Python 3.11 selected under Advanced settings. Hosting means audio is
+processed on the host's servers, as the in-app notice explains. Keep the app
+restricted to invited viewers.
+
 ## Running the tests
 
 ```bash
 pytest
 ```
+
+CI runs `pytest -m "not model"`, which leaves out the tests that need the real
+YAMNet model.
 
 ## Workflow
 
