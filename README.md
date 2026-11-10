@@ -33,8 +33,11 @@ pip install -r requirements-dev.txt
 YAMNet is downloaded the first time it is used.
 
 ```bash
-streamlit run app.py
+streamlit run app.py --server.address localhost
 ```
+
+The flag keeps the app private to your computer; without it, the committed
+config binds to all network addresses so that hosting works.
 
 To print the top five classes for one file:
 

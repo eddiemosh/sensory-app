@@ -1,6 +1,7 @@
 [server]
-# Only this computer can open the app when it is run locally.
-address = "localhost"
+# Hosting needs the app reachable by the host's proxy. For local use, run with
+# --server.address localhost (see README) so only this computer can open it.
+address = "0.0.0.0"
 # Size in MB. Keeps one large file from exhausting a hosted app's memory.
 maxUploadSize = 60
 
