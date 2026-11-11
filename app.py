@@ -69,9 +69,12 @@ def show_decision(decision):
         )
 
 
-st.set_page_config(page_title="SensoryAware", layout="centered")
-st.title("SensoryAware")
-st.write("Find potentially distracting sounds in a recording and get a suggestion.")
+st.set_page_config(page_title="Earitation", page_icon="👂", layout="centered")
+st.title("👂 Earitation")
+st.write(
+    "Spot the sounds that irritate your ears in a recording, and get a suggestion "
+    "for tuning them out."
+)
 st.caption(
     "Proof of concept. Suggestions are not medical advice, and a detected sound "
     "does not show that anyone is distracted or distressed. Sounds are only "

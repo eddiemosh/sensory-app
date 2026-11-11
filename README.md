@@ -1,4 +1,7 @@
-# SensoryAware
+# Earitation
+
+Earitation is the app name for **SensoryAware**, the coursework project. The
+Python package and the report keep the name `sensoryaware`.
 
 Coursework repository for **ECM3440 Software Engineering 2, CW1**: an engineering
 report and proof of concept for SensoryAware, a sound-recognition system that
