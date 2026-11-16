@@ -320,3 +320,46 @@ ran the checks.
 
 **AI assistance**: Claude ran the web searches, read the primary pages it
 could reach, and compiled the notes.
+
+---
+
+## 2026-11-16: Loud speech category, and Spotify research
+
+**Done**
+- Added a **Loud speech** category at my request (decision D4). A frame
+  counts only when a speech label scores at least 0.6 and the frame is at
+  least -20 dBFS loud; it recommends stronger masking audio.
+- Generalised the rule engine: any category can set its own score threshold
+  and minimum loudness (new requirement FR12, user story US6). The other five
+  categories are unchanged.
+- `audio.py` measures each frame's loudness (RMS in dBFS over the same
+  0.96 s window YAMNet scores); `app.py` attaches it to the predictions.
+- Sidebar: a loudness slider for loud speech, and help text on the global
+  threshold saying which categories use their own.
+- Written test-first: 14 new unit tests failed before the code existed, then
+  4 new system tests. Total tests: 92 (82 in CI).
+- Mutation check: disabling the loudness gate made 4 tests fail.
+- Updated requirements, design notes, traceability, the wireframe's category
+  list and the business research notes.
+- Researched Spotify playback for future development (decision D5).
+
+**Problem**
+- Two system tests failed at first: "Speech" became a configured label, so
+  the stand-in model's label list contained it twice and the test scored the
+  wrong copy. Fixed in the test helper.
+
+**Decisions and open points**
+- Loudness is relative to the microphone (dBFS), not a measured room level,
+  so the user can adjust it.
+- The office research says intelligibility, not loudness, predicts
+  distraction; counting only loud speech is a trade-off to discuss in the
+  report.
+- Neither default has been checked on real speech. A real recording test is
+  needed.
+- Spotify: automatic playback needs Premium and is limited to 5 users in
+  development mode, and since May 2025 wider access needs an organisation with
+  250k monthly users. Opening playlist links needs none of that.
+
+**AI assistance**: Claude implemented the change from my specification
+("speech with a high threshold, only loud speech"), wrote the tests and docs,
+and researched Spotify's API terms.

@@ -100,3 +100,70 @@ could not fix the underlying gap: YAMNet has no mouse-click label.
   `Clicking`. It stays in the clicking category. Because it includes
   typewriter keystrokes, fast typing may trigger both clicking and typing, and
   so the general focus profile.
+
+---
+
+## D4: Count speech only when it is confident and loud (2026-11-16)
+
+**Context.** Research on open-plan offices names speech as the biggest
+distractor (`business-research.md`), but the first build had no speech
+category. Speech is present in almost every real recording and is hard to
+mitigate, so a speech category with the normal rule (score 0.2 in 4 frames)
+would recommend masking almost all the time.
+
+**Decision (mine).** Add a **Loud speech** category that counts a frame only
+when a speech label scores at least **0.6** *and* the frame is at least
+**-20 dBFS** loud. It recommends stronger masking audio. To support this, any
+category can now set its own score threshold and minimum loudness (FR12); the
+other categories are unchanged.
+
+**How loudness is measured.** The RMS level of the same 0.96 s window YAMNet
+scored, in dB relative to full scale. 0 dBFS is the loudest a recording can
+hold.
+
+**Labels.** `Speech`, `Child speech, kid speaking`, `Conversation`, `Shout`,
+`Yell`, `Children shouting`, `Hubbub, speech noise, speech babble`.
+
+**Limitations.**
+- dBFS depends on microphone gain and distance, so -20 dBFS is not a fixed
+  real-world loudness. The sidebar has a slider so the user can set it for
+  their microphone. Both defaults are provisional and were not measured on
+  real speech recordings.
+- The office research says *intelligibility*, not loudness, predicts how
+  distracting speech is. Counting only loud speech misses quiet but clear
+  nearby conversation. This was a deliberate trade-off against constant
+  triggering, and is a point for the report.
+- YAMNet scores speech in a frame even when other sounds are present, so loud
+  non-speech noise during quiet talk could still count. Not yet tested on real
+  recordings.
+
+---
+
+## D5: Spotify playback as future development (2026-11-16)
+
+**Context.** I want the app to eventually play a chosen Spotify playlist for
+each intervention, instead of only naming the intervention.
+
+**Findings** (Spotify's developer documentation, checked 2026-11-16):
+- Playback can be started through the Web API's Start/Resume Playback
+  endpoint (`PUT /me/player/play`) with a playlist as the `context_uri`. It
+  needs the user's permission (OAuth scope `user-modify-playback-state`), a
+  Spotify app open on one of their devices, and **Spotify Premium**.
+- Apps in development mode work for **up to 5 allow-listed users**, and the
+  app owner must have Premium.
+- Extended quota (more users) is, since 15 May 2025, only for registered
+  organisations with at least 250,000 monthly active users, among other
+  criteria. A student or small new product cannot get it.
+
+**Decision.** Out of scope for the proof of concept; recorded as future
+development. Two possible routes:
+1. *Links (no API).* Each intervention opens a configured playlist link
+   (`https://open.spotify.com/playlist/...`) in the user's Spotify. Works for
+   any user, needs no account linking, but the user presses play.
+2. *Automatic playback (API).* Needs account linking, Premium, an open
+   Spotify device, and the developer quota limits above. Feasible as a
+   personal tool or demonstration for up to 5 people.
+
+**Consequences for the business analysis.** Relying on Spotify ties the
+product to another company's API terms and quota policy, which is a
+dependency risk.

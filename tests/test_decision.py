@@ -144,3 +144,74 @@ def test_evidence_covers_every_category_with_peak_score():
 def test_invalid_config_is_rejected(overrides):
     with pytest.raises(ValueError):
         config(**overrides)
+
+
+# --- Per-category thresholds and the loudness gate (FR12) --------------------
+
+SPEECH = SoundCategory(
+    "speech", "Loud speech", ("Speech",), "masking", min_score=0.95, min_level_db=-20.0
+)
+
+
+def with_levels(preds, levels):
+    return FramePredictions(preds.class_names, preds.scores, np.array(levels, dtype=float))
+
+
+def test_category_threshold_overrides_the_global_one():
+    strict = SoundCategory("clicking", "Clicking", ("Clicking",), "gentle", min_score=0.95)
+    decision = decide(predictions(Clicking=[1, 3, 5]), config(categories=(strict,)))
+    assert decision.intervention is None
+    assert decision.evidence[0].frames_detected == 0
+
+
+def test_loud_speech_triggers_its_intervention():
+    loud_speech = SoundCategory("speech", "Loud speech", ("Speech",), "masking", min_level_db=-20.0)
+    preds = with_levels(predictions(Speech=[1, 2, 3, 4]), [-10.0] * 10)
+    decision = decide(preds, config(categories=(loud_speech,)))
+    assert decision.intervention == MASKING
+    assert decision.evidence[0].frames_detected == 4
+
+
+def test_quiet_speech_is_ignored():
+    loud_speech = SoundCategory("speech", "Loud speech", ("Speech",), "masking", min_level_db=-20.0)
+    preds = with_levels(predictions(Speech=[1, 2, 3, 4]), [-35.0] * 10)
+    decision = decide(preds, config(categories=(loud_speech,)))
+    assert decision.intervention is None
+    assert decision.evidence[0].frames_detected == 0
+
+
+def test_only_frames_that_are_both_confident_and_loud_count():
+    loud_speech = SoundCategory("speech", "Loud speech", ("Speech",), "masking", min_level_db=-20.0)
+    levels = [-10.0, -10.0, -40.0, -40.0, -10.0, -10.0, -40.0, -40.0, -40.0, -40.0]
+    preds = with_levels(predictions(Speech=[0, 1, 2, 3]), levels)
+    assert decide(preds, config(categories=(loud_speech,))).evidence[0].frames_detected == 2
+
+
+def test_gated_category_without_levels_is_skipped_with_a_warning():
+    loud_speech = SoundCategory("speech", "Loud speech", ("Speech",), "masking", min_level_db=-20.0)
+    decision = decide(predictions(Speech=[1, 2, 3, 4]), config(categories=(loud_speech,)))
+    assert decision.intervention is None
+    assert any("loudness" in warning for warning in decision.warnings)
+
+
+def test_explanation_states_the_category_rule_including_loudness():
+    loud_speech = SoundCategory(
+        "speech", "Loud speech", ("Speech",), "masking", min_score=0.6, min_level_db=-20.0
+    )
+    preds = with_levels(predictions(Speech=[1, 2, 3, 4]), [-10.0] * 10)
+    explanation = decide(preds, config(categories=(loud_speech,))).explanation
+    assert "score 0.60 or above" in explanation
+    assert "-20 dBFS" in explanation
+
+
+@pytest.mark.parametrize(
+    "category",
+    [
+        SoundCategory("x", "X", ("Bang",), "masking", min_score=0.0),
+        SoundCategory("x", "X", ("Bang",), "masking", min_score=1.5),
+        SoundCategory("x", "X", ("Bang",), "masking", min_level_db=3.0),
+    ],
+)
+def test_invalid_category_thresholds_are_rejected(category):
+    with pytest.raises(ValueError):
+        config(categories=(category,))

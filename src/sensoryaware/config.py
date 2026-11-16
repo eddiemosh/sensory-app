@@ -54,6 +54,25 @@ DEFAULT_CONFIG = EngineConfig(
             ("Alarm", "Alarm clock", "Beep, bleep", "Buzzer", "Ringtone"),
             STRONGER_MASKING.id,
         ),
+        # Speech is everywhere and hard to mask, so only confident, loud speech
+        # counts (decision D4). Both thresholds are provisional, and the
+        # loudness one depends on the microphone's gain.
+        SoundCategory(
+            "speech",
+            "Loud speech",
+            (
+                "Speech",
+                "Child speech, kid speaking",
+                "Conversation",
+                "Shout",
+                "Yell",
+                "Children shouting",
+                "Hubbub, speech noise, speech babble",
+            ),
+            STRONGER_MASKING.id,
+            min_score=0.6,
+            min_level_db=-20.0,
+        ),
     ),
     interventions=(GENTLE_INSTRUMENTAL, STRONGER_MASKING, GENERAL_FOCUS),
     multi_category_intervention=GENERAL_FOCUS.id,

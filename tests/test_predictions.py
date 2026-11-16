@@ -26,3 +26,10 @@ def test_top_k_with_no_frames_is_empty():
 def test_mismatched_scores_are_rejected():
     with pytest.raises(ValueError):
         FramePredictions(NAMES, np.zeros((2, 4)))
+
+
+def test_levels_must_match_the_number_of_frames():
+    scores = np.zeros((3, len(NAMES)), dtype=np.float32)
+    with pytest.raises(ValueError):
+        FramePredictions(NAMES, scores, np.zeros(2))
+    assert FramePredictions(NAMES, scores, np.zeros(3)).levels_db.shape == (3,)

@@ -13,6 +13,7 @@ success criteria.
 | US3 | As a user, I want a one-off sound to be ignored so that I am not interrupted unnecessarily. |
 | US4 | As a user, I want a suitable audio recommendation when a distracting sound recurs. |
 | US5 | As a user, I want to know why a recommendation was or was not made so that I can trust and tune it. |
+| US6 | As a user, I want loud speech near me to count as a distraction, but not ordinary background talk, because talk is everywhere and hard to mask. |
 
 ## Functional requirements
 
@@ -22,13 +23,16 @@ success criteria.
 | FR2 | The system shall report a useful error for corrupt, unsupported, empty or over-long audio. | SC1 |
 | FR3 | The system shall run YAMNet and produce per-frame scores for its 521 classes. | US1, SC2 |
 | FR4 | The system shall display the five highest-scoring classes with their scores. | US1, SC3 |
-| FR5 | The user shall be able to configure the distracting categories, score threshold and minimum frame count. | US2, SC4 |
+| FR5 | The user shall be able to configure the distracting categories, score threshold, minimum frame count and the loudness level for loud speech. | US2, SC4 |
 | FR6 | A category shall trigger only when its score reaches the threshold in at least the minimum number of frames. | US3, SC4 |
 | FR7 | Each triggered category shall lead to its configured intervention. | US4, SC5 |
 | FR8 | When two or more categories trigger, the system shall recommend the general focus profile. | US4, SC5 |
 | FR9 | When no category triggers, the system shall recommend no intervention. | US3, SC5 |
 | FR10 | Every decision shall include a plain-language explanation and per-category evidence. | US5, SC5 |
 | FR11 | Configured labels that YAMNet does not have shall be reported and ignored, not cause a failure. | SC4 |
+| FR12 | A category may set its own score threshold and a minimum loudness per frame. The speech category shall count only frames that are both confidently speech (default score 0.6) and loud (default -20 dBFS). | US6 |
+
+US6 and FR12 were added on 2026-11-16, after the first build (decision D4).
 
 ## Non-functional requirements
 
