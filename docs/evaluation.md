@@ -81,14 +81,16 @@ all five folds took 88 s for logistic regression, 11 s for the SVM and 1 s for
 
 ## Implications for the app
 
-The decision engine currently uses YAMNet's labels directly, the same approach
-as Arm A. These results suggest a trained head (Arm B) would detect clicking
-and ticking far more reliably. Options, to decide before the final build:
+The decision engine uses YAMNet's labels directly, the same approach as Arm A.
+These results suggest a trained head (Arm B) would detect clicking and ticking
+far more reliably on ESC-50.
 
-1. Keep labels in the app (simple, transparent, no training data needed) and
-   report the weakness honestly.
-2. Train the logistic-regression head on the ESC-50 classes the app cares about
-   and feed its probabilities into the same rule engine.
+**Decided (2026-11-16): keep labels in the app.** Arm B's result was measured
+on a closed set of whole clips, which the app does not have: real recordings
+are mostly sounds outside ESC-50's 50 classes, and the rule engine scores
+single frames. The full reasoning is decision D3 in
+[`decisions.md`](decisions.md). Clicking detection is therefore known to be
+weak, and a trained head is future work.
 
 ## Limitations
 
@@ -104,3 +106,8 @@ and ticking far more reliably. Options, to decide before the final build:
 - ESC-50 clips each contain one labelled sound; the app's rule (a sound
   recurring over several frames) is not evaluated here.
 - ESC-50 is believed to be licensed for non-commercial use only (see README).
+- Label mapping is a judgement call. `Clickety-clack` is defined in AudioSet as
+  rhythmic machine clicking, "such as keystrokes on a typewriter or steel
+  wheels running on tracks". This evaluation maps it to *train*, while the app
+  puts it under *clicking*. Both are defensible; the mapping here was fixed
+  before the run and left unchanged.

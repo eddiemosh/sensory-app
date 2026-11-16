@@ -153,3 +153,28 @@ and ran the checks above. I chose the features and reviewed the output.
 **AI assistance**: Claude wrote the label mapping, the evaluation code and
 tests, ran the evaluation and drafted the write-up. The interpretation needs my
 own review before it goes into the report.
+
+---
+
+## 2026-11-16: Decision on labels versus a trained classifier
+
+**Done**
+- Decided to keep YAMNet's labels in the app rather than switch to the trained
+  classifier from the evaluation. Recorded as D3 in the new
+  `docs/decisions.md`, along with two earlier decisions written up from this
+  log (D1 recurrence within a clip, D2 audio handling).
+- Considered and rejected tuning the clicking category's labels on ESC-50: it
+  would be fitting by hand and could not fix the missing mouse-click label.
+- Checked `Clickety-clack` against Google's published AudioSet ontology
+  (`ontology.json` on GitHub). I had assumed it meant train wheels only; its
+  definition also covers typewriter keystrokes, so it stays in the clicking
+  category. Noted the overlap with typing.
+
+**Why**
+- The classifier's 0.853 accuracy was measured on whole clips from a closed
+  set of 50 classes; the app scores single frames of recordings that are
+  mostly speech, silence and other sounds outside that set. Details in D3.
+
+**AI assistance**: Claude explained the trade-offs and drafted the decision
+record. I made the decision after questioning whether tuning labels was
+worthwhile.
