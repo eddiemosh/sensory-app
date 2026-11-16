@@ -282,3 +282,41 @@ Each was a temporary edit to `app.py`, reverted afterwards:
 
 **AI assistance**: Claude built the table, wrote the gap-filling tests and
 ran the checks.
+
+---
+
+## 2026-11-16: Business research notes
+
+**Done**
+- `docs/business-research.md`: sourced notes on who has the problem, possible
+  stakeholders, existing products, law and regulation, costs and funding. Each
+  finding is marked as a primary or secondary source, and a list of what to
+  check before writing the analysis is included.
+- Confirmed from the ESC-50 repository that human listeners scored 81.3%
+  (Piczak, 2015), and that the dataset is CC BY-NC 3.0 (ESC-10 is CC BY).
+  Updated `evaluation.md` with the full citation.
+- Confirmed Streamlit Community Cloud's limits from its documentation: up to
+  2.7 GB of memory, 2 cores, and sleep after 12 hours without traffic.
+
+**Decisions**
+- These are notes, not the analysis. The plan requires the report's analysis
+  and conclusions to be my own, so the notes state findings neutrally and
+  list open questions rather than arguing a position.
+
+**Problems**
+- Checking the first draft against the search results found two errors,
+  both fixed before committing: an office-noise citation that did not come
+  from any result, and a prevalence figure attributed to the wrong paper. Every figure in the
+  notes should still be checked against its source before it is used.
+- The full text of the misophonia prevalence paper could not be read (the
+  site blocked automated access), so its figures come from the abstract and
+  the university's press release.
+
+**Points raised for the report**
+- Speech is the biggest distractor in office research, but it is not one of
+  the app's categories.
+- No product found both listens for distracting sounds and responds with
+  audio, but the search was not exhaustive.
+
+**AI assistance**: Claude ran the web searches, read the primary pages it
+could reach, and compiled the notes.
