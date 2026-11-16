@@ -178,3 +178,35 @@ own review before it goes into the report.
 **AI assistance**: Claude explained the trade-offs and drafted the decision
 record. I made the decision after questioning whether tuning labels was
 worthwhile.
+
+---
+
+## 2026-11-16: Architecture diagram and wireframes
+
+**Done**
+- `docs/design/architecture.svg`: modules, data passed between them, the
+  boundary of the server that processes audio, the one-time model download,
+  and the offline evaluation path. Requirement numbers are marked on the
+  components that implement them.
+- `docs/design/wireframes.svg`: low-fidelity layouts of the three screen
+  states (before consent, choosing audio, results), annotated with the
+  requirements each shows.
+- `docs/design/README.md`: module responsibilities and dependencies, design
+  principles, the data passed between stages, the decision rule, and the two
+  deployment modes.
+
+**Decisions**
+- Drew the diagrams as SVG so they render on GitHub and can be inserted into
+  the report without losing quality.
+- The wireframes are labelled as drawn after the first build. The plan wanted
+  design to visibly precede the build; the requirements did (commit
+  `4be7598`), but the wireframes did not, and the report should not imply
+  otherwise.
+
+**Checks**
+- Rendered both SVGs in a browser and fixed overlapping labels.
+- Checked the design notes against the code, which corrected two claims: the
+  rule engine depends on NumPy (not only the standard library) and has 20
+  tests, not 18.
+
+**AI assistance**: Claude drew the diagrams and drafted the design notes.

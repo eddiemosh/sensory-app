@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" font-family="Arial, Helvetica, sans-serif">
+  <title>Earitation architecture and data flow</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-grey" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="720" fill="#ffffff"/>
+
+  <!-- Browser -->
+  <rect x="40" y="30" width="720" height="80" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="60" y="60" font-size="15" font-weight="bold" fill="#1e1b4b">User's browser</text>
+  <text x="60" y="84" font-size="13" fill="#312e81">Microphone recording or audio file in; notice, consent, settings and results shown</text>
+
+  <!-- TensorFlow Hub -->
+  <rect x="800" y="30" width="360" height="80" rx="8" fill="#fff7ed" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="820" y="60" font-size="15" font-weight="bold" fill="#7c2d12">TensorFlow Hub (Google)</text>
+  <text x="820" y="80" font-size="12" fill="#7c2d12">YAMNet weights, downloaded once and cached.</text>
+  <text x="820" y="97" font-size="12" fill="#7c2d12">No audio is sent.</text>
+
+  <!-- Server boundary -->
+  <rect x="40" y="150" width="1120" height="370" rx="10" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="8 5"/>
+  <text x="260" y="174" font-size="13" font-weight="bold" fill="#1e3a8a">Server running the app: your computer, or Streamlit Community Cloud when hosted</text>
+  <text x="260" y="192" font-size="12" fill="#1e3a8a">Audio is held in memory only. Nothing is saved to disk or sent to another service (NFR1).</text>
+
+  <!-- Browser <-> interface -->
+  <line x1="140" y1="110" x2="140" y2="208" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="132" y="127" font-size="11" fill="#334155" text-anchor="end">audio,</text>
+  <text x="132" y="140" font-size="11" fill="#334155" text-anchor="end">settings</text>
+  <line x1="190" y1="208" x2="190" y2="112" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="198" y="136" font-size="11" fill="#334155">results</text>
+
+  <!-- TF Hub -> model -->
+  <line x1="820" y1="110" x2="820" y2="208" stroke="#c2410c" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+
+  <!-- Components -->
+  <g>
+    <rect x="70" y="210" width="190" height="90" rx="6" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+    <text x="85" y="236" font-size="15" font-weight="bold" fill="#0f172a">Interface</text>
+    <text x="85" y="256" font-size="12" font-family="Consolas, monospace" fill="#475569">app.py · Streamlit</text>
+    <text x="85" y="276" font-size="12" fill="#334155">notice, consent gate,</text>
+    <text x="85" y="291" font-size="12" fill="#334155">settings, results</text>
+  </g>
+  <g>
+    <rect x="360" y="210" width="190" height="90" rx="6" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+    <text x="375" y="236" font-size="15" font-weight="bold" fill="#0f172a">Audio loading</text>
+    <text x="375" y="256" font-size="12" font-family="Consolas, monospace" fill="#475569">audio.py</text>
+    <text x="375" y="276" font-size="12" fill="#334155">decode, mono, 16 kHz;</text>
+    <text x="375" y="291" font-size="12" fill="#334155">reject bad audio (FR1, FR2)</text>
+  </g>
+  <g>
+    <rect x="650" y="210" width="190" height="90" rx="6" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+    <text x="665" y="236" font-size="15" font-weight="bold" fill="#0f172a">Sound classifier</text>
+    <text x="665" y="256" font-size="12" font-family="Consolas, monospace" fill="#475569">model.py · YAMNet</text>
+    <text x="665" y="276" font-size="12" fill="#334155">TensorFlow; 521 labels,</text>
+    <text x="665" y="291" font-size="12" fill="#334155">a frame every 0.48 s (FR3)</text>
+  </g>
+  <g>
+    <rect x="940" y="210" width="190" height="90" rx="6" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+    <text x="955" y="236" font-size="15" font-weight="bold" fill="#0f172a">Rule engine</text>
+    <text x="955" y="256" font-size="12" font-family="Consolas, monospace" fill="#475569">decision.py</text>
+    <text x="955" y="276" font-size="12" fill="#334155">no Streamlit or</text>
+    <text x="955" y="291" font-size="12" fill="#334155">TensorFlow (NFR2)</text>
+  </g>
+
+  <!-- Forward arrows -->
+  <line x1="260" y1="255" x2="358" y2="255" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="310" y="231" font-size="11" fill="#334155" text-anchor="middle">audio bytes</text>
+  <text x="310" y="244" font-size="11" fill="#334155" text-anchor="middle">(memory)</text>
+  <line x1="550" y1="255" x2="648" y2="255" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="600" y="231" font-size="11" fill="#334155" text-anchor="middle">16 kHz mono</text>
+  <text x="600" y="244" font-size="11" fill="#334155" text-anchor="middle">waveform</text>
+  <line x1="840" y1="255" x2="938" y2="255" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="890" y="231" font-size="11" fill="#334155" text-anchor="middle">frames × 521</text>
+  <text x="890" y="244" font-size="11" fill="#334155" text-anchor="middle">scores</text>
+
+  <!-- Return path -->
+  <path d="M1000,300 L1000,340 L180,340 L180,302" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="200" y="360" font-size="12" fill="#334155">Decision: intervention, plain-language explanation, per-category evidence (FR7–FR10)</text>
+
+  <!-- Config -->
+  <rect x="940" y="400" width="190" height="90" rx="6" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+  <text x="955" y="426" font-size="15" font-weight="bold" fill="#0f172a">Rules</text>
+  <text x="955" y="446" font-size="12" font-family="Consolas, monospace" fill="#475569">config.py + sidebar</text>
+  <text x="955" y="466" font-size="12" fill="#334155">categories, labels,</text>
+  <text x="955" y="481" font-size="12" fill="#334155">thresholds (FR5)</text>
+  <line x1="1070" y1="400" x2="1070" y2="302" stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Offline evaluation -->
+  <rect x="40" y="560" width="1120" height="130" rx="10" fill="#ffffff" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="60" y="584" font-size="13" font-weight="bold" fill="#334155">Offline evaluation (run by the developer; not part of the running app)</text>
+  <g>
+    <rect x="360" y="600" width="190" height="72" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="375" y="624" font-size="14" font-weight="bold" fill="#0f172a">ESC-50 clips</text>
+    <text x="375" y="643" font-size="12" font-family="Consolas, monospace" fill="#475569">data/ESC-50</text>
+    <text x="375" y="661" font-size="12" fill="#334155">2,000 clips, 5 folds</text>
+  </g>
+  <g>
+    <rect x="650" y="600" width="190" height="72" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="665" y="624" font-size="14" font-weight="bold" fill="#0f172a">Evaluation script</text>
+    <text x="665" y="643" font-size="12" font-family="Consolas, monospace" fill="#475569">evaluate_esc50.py</text>
+    <text x="665" y="661" font-size="12" fill="#334155">extracts scores, embeddings</text>
+  </g>
+  <g>
+    <rect x="940" y="600" width="190" height="72" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="955" y="624" font-size="14" font-weight="bold" fill="#0f172a">Two arms compared</text>
+    <text x="955" y="643" font-size="12" font-family="Consolas, monospace" fill="#475569">evaluation.py</text>
+    <text x="955" y="661" font-size="12" fill="#334155">labels vs scikit-learn</text>
+  </g>
+  <line x1="550" y1="636" x2="648" y2="636" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-grey)"/>
+  <line x1="840" y1="636" x2="938" y2="636" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow-grey)"/>
+  <line x1="745" y1="600" x2="745" y2="302" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-grey)"/>
+  <text x="753" y="540" font-size="11" fill="#475569">reuses the same</text>
+  <text x="753" y="553" font-size="11" fill="#475569">YAMNet wrapper</text>
+  <text x="60" y="612" font-size="12" fill="#334155">Results are written to</text>
+  <text x="60" y="630" font-size="12" font-family="Consolas, monospace" fill="#475569">docs/evaluation/results.json</text>
+  <text x="60" y="648" font-size="12" fill="#334155">and discussed in</text>
+  <text x="60" y="666" font-size="12" font-family="Consolas, monospace" fill="#475569">docs/evaluation.md</text>
+</svg>
