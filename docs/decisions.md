@@ -164,6 +164,12 @@ development. Two possible routes:
    Spotify device, and the developer quota limits above. Feasible as a
    personal tool or demonstration for up to 5 people.
 
+**Chosen route (2026-11-16).** Automatic playback (route 2). I accept its
+limits: Premium for each user and the app owner, at most 5 allow-listed users,
+and no path to wider release without an organisation that meets Spotify's
+extended-quota criteria. That suits a personal tool or a demonstration.
+Route 1 remains the fallback for anyone without Premium.
+
 **Consequences for the business analysis.** Relying on Spotify ties the
 product to another company's API terms and quota policy, which is a
 dependency risk.

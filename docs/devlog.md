@@ -363,3 +363,8 @@ could reach, and compiled the notes.
 **AI assistance**: Claude implemented the change from my specification
 ("speech with a high threshold, only loud speech"), wrote the tests and docs,
 and researched Spotify's API terms.
+
+**Update (same day).** I accepted Spotify's limits for automatic playback
+(Premium, 5 allow-listed users, no wider release without meeting the
+extended-quota criteria). D5 now records automatic playback as the chosen
+future route, with playlist links as the fallback. Nothing is built yet.
