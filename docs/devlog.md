@@ -254,3 +254,31 @@ Each was a temporary edit to `app.py`, reverted afterwards:
   real recordings.
 
 **AI assistance**: Claude wrote the tests and ran the mutation checks.
+
+---
+
+## 2026-11-16: Traceability table, and the gaps it found
+
+**Done**
+- `docs/traceability.md` maps all 11 functional and 6 non-functional
+  requirements to the unit, integration and system tests that check them,
+  with notes on partial coverage.
+- Building it showed three requirements without a direct test. Added:
+  - `tests/test_architecture.py` (NFR2): imports the rule engine and default
+    rules in a fresh interpreter and checks that neither Streamlit nor
+    TensorFlow is loaded; also checks `model.py` defers loading TensorFlow.
+  - `test_raising_the_score_threshold_changes_the_decision` (FR5).
+  - `test_label_missing_from_the_model_is_shown_as_a_warning` (FR11).
+- Mutation checks on the new tests: adding `import streamlit` to the rule
+  engine, and hiding warnings in the interface, were both caught.
+- Checked by script that every test named in the table exists.
+- Total tests: 74 (64 in CI).
+
+**Remaining partial coverage**
+- Unsupported file types are filtered by Streamlit's upload widget, which the
+  test harness does not enforce.
+- NFR4 (no medical claims) needs a manual review of the interface wording.
+- Hosted processing is covered by the in-app notice, not a test.
+
+**AI assistance**: Claude built the table, wrote the gap-filling tests and
+ran the checks.

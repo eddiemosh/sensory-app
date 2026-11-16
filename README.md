@@ -64,6 +64,9 @@ embeddings, using ESC-50's five folds, and writes
 ## Documentation
 
 - `docs/requirements.md`: user stories and numbered requirements
+- `docs/design/`: architecture diagram, wireframes and design notes
+- `docs/decisions.md`: design decisions with the options considered
+- `docs/traceability.md`: which tests check each requirement
 - `docs/evaluation.md`: ESC-50 results and what they mean for the app
 - `docs/devlog.md`: dated log of what was done, why, and where AI helped
 

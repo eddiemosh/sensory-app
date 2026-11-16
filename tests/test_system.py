@@ -175,6 +175,14 @@ def test_raising_minimum_frames_changes_the_decision(app):
     assert "No intervention recommended" in recommendation(app)
 
 
+def test_raising_the_score_threshold_changes_the_decision(app):
+    FakeClassifier.frames_by_label = {"Typing": [0, 2, 4, 6, 8]}
+    upload(consent(app))
+    threshold = next(s for s in app.slider if s.label == "Score threshold")
+    threshold.set_value(0.95).run()
+    assert "No intervention recommended" in recommendation(app)
+
+
 def test_deselecting_a_category_stops_it_triggering(app):
     FakeClassifier.frames_by_label = {"Typing": [0, 2, 4, 6, 8]}
     upload(consent(app))
@@ -192,6 +200,20 @@ def test_corrupt_upload_shows_an_error_and_no_results(app):
     assert len(app.error) == 1
     assert FakeClassifier.calls == 0
     assert all(h.value != "Recommendation" for h in app.subheader)
+
+
+# --- Labels the model lacks (FR11) -------------------------------------------
+
+
+def test_label_missing_from_the_model_is_shown_as_a_warning(app, monkeypatch):
+    reduced = tuple(name for name in CLASS_NAMES if name != "Ringtone")
+    monkeypatch.setitem(globals(), "CLASS_NAMES", reduced)
+    FakeClassifier.frames_by_label = {"Typing": [0, 2, 4, 6, 8]}
+    upload(consent(app))
+    assert not app.exception
+    assert "Gentle instrumental audio" in recommendation(app)
+    warnings = " ".join(w.value for w in app.warning)
+    assert "'Ringtone'" in warnings and "not a YAMNet label" in warnings
 
 
 # --- Privacy (NFR1) ----------------------------------------------------------
