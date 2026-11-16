@@ -83,6 +83,10 @@ pytest
 CI runs `pytest -m "not model"`, which leaves out the tests that need the real
 YAMNet model.
 
+`tests/test_system.py` drives the whole app through Streamlit's test harness
+with a stand-in model; `tests/test_system_model.py` repeats the key journeys
+with the real model.
+
 ## Workflow
 
 - Commit small and often; one GitHub issue per milestone.

@@ -210,3 +210,47 @@ worthwhile.
   tests, not 18.
 
 **AI assistance**: Claude drew the diagrams and drafted the design notes.
+
+---
+
+## 2026-11-16: System tests
+
+**Done**
+- `tests/test_system.py` (14 tests, run in CI): drives the real `app.py`
+  through Streamlit's `AppTest` harness: ticking consent, choosing upload or
+  microphone, uploading a file, recording a clip, changing settings, and
+  uploading a corrupt file. YAMNet is replaced by a stand-in whose scores each
+  test sets, so the tests check the whole path from input to displayed
+  recommendation without the 2 GB TensorFlow dependency in CI.
+- `tests/test_system_model.py` (4 tests, `model` marker): the same journeys
+  with the real YAMNet on synthetic audio. Repeated beeps get stronger
+  masking, silence and a single beep get nothing, and analysis makes no
+  outside network connections and writes no files.
+- Total tests: 69 (59 in CI).
+
+**Checking the tests can fail (mutation checks)**
+Each was a temporary edit to `app.py`, reverted afterwards:
+
+| Deliberate fault | Caught by |
+| --- | --- |
+| Consent gate removed | `test_no_audio_input_is_offered_before_consent` |
+| Upload saved to `leak.wav` | `test_analysis_writes_no_files` |
+| Sidebar settings ignored | both settings tests |
+| Connection opened to an outside address | `test_analysis_makes_no_network_requests_or_file_writes` |
+
+**Problem**
+- The no-network test first failed on a connection to `127.0.0.1`. That is
+  loopback traffic inside the computer: on Windows, Python's asyncio event
+  loop, which Streamlit uses, signals itself through a loopback socket. The
+  test now fails on any connection that is not loopback. This matches NFR1,
+  which is about audio reaching other services.
+
+**Limits**
+- The stand-in model means CI tests do not cover YAMNet itself; the
+  model-marked tests do, but only locally.
+- The file-write check sees writes made through Python. A write made inside
+  TensorFlow's C++ code would not be seen; none is expected during analysis.
+- Synthetic beeps show the pipeline works; they say nothing about accuracy on
+  real recordings.
+
+**AI assistance**: Claude wrote the tests and ran the mutation checks.
