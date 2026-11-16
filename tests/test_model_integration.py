@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from sensoryaware.config import DEFAULT_CONFIG
+from sensoryaware.evaluation import ESC50_TO_YAMNET, missing_labels
 from sensoryaware.model import YamnetClassifier
 
 pytestmark = pytest.mark.model
@@ -33,3 +34,12 @@ def test_results_are_reproducible(classifier):
 def test_every_default_label_exists_in_yamnet(classifier):
     labels = {label for c in DEFAULT_CONFIG.categories for label in c.labels}
     assert labels <= set(classifier.class_names)
+
+
+def test_every_esc50_mapped_label_exists_in_yamnet(classifier):
+    assert missing_labels(ESC50_TO_YAMNET, classifier.class_names) == []
+
+
+def test_analyse_returns_one_embedding_per_frame(classifier):
+    predictions, embeddings = classifier.analyse(np.zeros(16000 * 5, dtype=np.float32))
+    assert embeddings.shape == (predictions.num_frames, 1024)
