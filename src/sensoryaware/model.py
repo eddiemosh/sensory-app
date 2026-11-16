@@ -31,5 +31,9 @@ class YamnetClassifier:
 
     def classify(self, waveform: np.ndarray) -> FramePredictions:
         """Score 16 kHz mono audio: one frame per 0.48 s, each covering 0.96 s."""
-        scores, _embeddings, _spectrogram = self._model(waveform)
-        return FramePredictions(self.class_names, scores.numpy())
+        return self.analyse(waveform)[0]
+
+    def analyse(self, waveform: np.ndarray) -> tuple[FramePredictions, np.ndarray]:
+        """Return the per-frame scores and the per-frame 1,024-value embeddings."""
+        scores, embeddings, _spectrogram = self._model(waveform)
+        return FramePredictions(self.class_names, scores.numpy()), embeddings.numpy()

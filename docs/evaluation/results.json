@@ -1,0 +1,444 @@
+{
+  "dataset": "ESC-50, 2,000 clips, 50 classes, 5 predefined folds",
+  "clip_features": "mean over YAMNet frames (scores: 521, embeddings: 1,024)",
+  "yamnet_seconds_per_clip": {
+    "mean": 0.032805833049234935,
+    "p95": 0.053772924991790205
+  },
+  "app_relevant_classes": [
+    "mouse_click",
+    "keyboard_typing",
+    "clock_tick",
+    "door_wood_knock",
+    "clock_alarm"
+  ],
+  "arms": {
+    "A_mapped_labels": {
+      "accuracy": 0.6545,
+      "fold_accuracies": [
+        0.6675,
+        0.625,
+        0.655,
+        0.6575,
+        0.6675
+      ],
+      "fold_std": 0.015604486534327229,
+      "macro_f1": 0.6150591220386457,
+      "per_class_f1": {
+        "dog": 0.8,
+        "rooster": 0.0,
+        "pig": 0.7951807228915663,
+        "cow": 0.8648648648648649,
+        "frog": 0.88,
+        "cat": 0.8,
+        "hen": 0.5873015873015873,
+        "insects": 0.7191011235955056,
+        "sheep": 0.9487179487179487,
+        "crow": 0.918918918918919,
+        "rain": 0.7901234567901234,
+        "sea_waves": 0.8604651162790697,
+        "crackling_fire": 0.7027027027027027,
+        "crickets": 0.2978723404255319,
+        "chirping_birds": 0.7572815533980582,
+        "water_drops": 0.3595505617977528,
+        "wind": 0.27586206896551724,
+        "pouring_water": 0.1568627450980392,
+        "toilet_flush": 0.9620253164556962,
+        "thunderstorm": 0.9090909090909091,
+        "crying_baby": 0.7741935483870968,
+        "sneezing": 0.7323943661971831,
+        "clapping": 0.935064935064935,
+        "breathing": 0.47761194029850745,
+        "coughing": 0.7816091954022989,
+        "footsteps": 0.6363636363636364,
+        "laughing": 0.85,
+        "brushing_teeth": 0.6557377049180327,
+        "snoring": 0.27586206896551724,
+        "drinking_sipping": 0.17391304347826086,
+        "door_wood_knock": 0.782608695652174,
+        "mouse_click": 0.08695652173913043,
+        "keyboard_typing": 0.7142857142857143,
+        "door_wood_creaks": 0.0,
+        "can_opening": 0.0,
+        "washing_machine": 0.045454545454545456,
+        "vacuum_cleaner": 0.5901639344262295,
+        "clock_alarm": 0.6915887850467289,
+        "clock_tick": 0.5777777777777777,
+        "glass_breaking": 0.7169811320754716,
+        "helicopter": 0.43636363636363634,
+        "chainsaw": 0.6557377049180327,
+        "siren": 0.7555555555555555,
+        "car_horn": 0.7536231884057971,
+        "engine": 0.524822695035461,
+        "train": 0.7079646017699115,
+        "church_bells": 0.975609756097561,
+        "airplane": 0.49056603773584906,
+        "fireworks": 0.6964285714285714,
+        "hand_saw": 0.8717948717948718
+      },
+      "top_confusions": [
+        {
+          "true": "rooster",
+          "predicted": "hen",
+          "clips": 38
+        },
+        {
+          "true": "snoring",
+          "predicted": "breathing",
+          "clips": 31
+        },
+        {
+          "true": "chainsaw",
+          "predicted": "engine",
+          "clips": 20
+        },
+        {
+          "true": "pouring_water",
+          "predicted": "water_drops",
+          "clips": 20
+        },
+        {
+          "true": "mouse_click",
+          "predicted": "keyboard_typing",
+          "clips": 18
+        },
+        {
+          "true": "pouring_water",
+          "predicted": "drinking_sipping",
+          "clips": 15
+        },
+        {
+          "true": "crickets",
+          "predicted": "insects",
+          "clips": 15
+        },
+        {
+          "true": "vacuum_cleaner",
+          "predicted": "airplane",
+          "clips": 14
+        }
+      ]
+    },
+    "B_embeddings_logistic_regression": {
+      "accuracy": 0.853,
+      "fold_accuracies": [
+        0.8275,
+        0.875,
+        0.835,
+        0.875,
+        0.8525
+      ],
+      "fold_std": 0.019710403344427026,
+      "macro_f1": 0.8534118074012932,
+      "per_class_f1": {
+        "dog": 0.9473684210526315,
+        "rooster": 0.8974358974358975,
+        "pig": 0.8,
+        "cow": 0.868421052631579,
+        "frog": 0.8831168831168831,
+        "cat": 0.8717948717948718,
+        "hen": 0.925,
+        "insects": 0.8767123287671232,
+        "sheep": 0.95,
+        "crow": 0.9620253164556962,
+        "rain": 0.9367088607594937,
+        "sea_waves": 0.925,
+        "crackling_fire": 0.825,
+        "crickets": 0.85,
+        "chirping_birds": 0.891566265060241,
+        "water_drops": 0.5970149253731343,
+        "wind": 0.6987951807228916,
+        "pouring_water": 0.9397590361445783,
+        "toilet_flush": 0.961038961038961,
+        "thunderstorm": 0.9382716049382716,
+        "crying_baby": 0.975,
+        "sneezing": 0.7912087912087912,
+        "clapping": 0.9487179487179487,
+        "breathing": 0.875,
+        "coughing": 0.775,
+        "footsteps": 0.88,
+        "laughing": 0.8831168831168831,
+        "brushing_teeth": 0.95,
+        "snoring": 0.9367088607594937,
+        "drinking_sipping": 0.8470588235294118,
+        "door_wood_knock": 0.8275862068965517,
+        "mouse_click": 0.5789473684210527,
+        "keyboard_typing": 0.8947368421052632,
+        "door_wood_creaks": 0.7710843373493976,
+        "can_opening": 0.7640449438202247,
+        "washing_machine": 0.5641025641025641,
+        "vacuum_cleaner": 0.868421052631579,
+        "clock_alarm": 0.9473684210526315,
+        "clock_tick": 0.8470588235294118,
+        "glass_breaking": 0.7692307692307693,
+        "helicopter": 0.6190476190476191,
+        "chainsaw": 0.9156626506024096,
+        "siren": 0.95,
+        "car_horn": 0.8536585365853658,
+        "engine": 0.810126582278481,
+        "train": 0.925,
+        "church_bells": 1.0,
+        "airplane": 0.5609756097560976,
+        "fireworks": 0.9135802469135802,
+        "hand_saw": 0.8831168831168831
+      },
+      "train_and_predict_seconds": 87.75826979987323,
+      "top_confusions": [
+        {
+          "true": "airplane",
+          "predicted": "helicopter",
+          "clips": 8
+        },
+        {
+          "true": "helicopter",
+          "predicted": "airplane",
+          "clips": 7
+        },
+        {
+          "true": "water_drops",
+          "predicted": "clock_tick",
+          "clips": 6
+        },
+        {
+          "true": "keyboard_typing",
+          "predicted": "mouse_click",
+          "clips": 6
+        },
+        {
+          "true": "footsteps",
+          "predicted": "door_wood_knock",
+          "clips": 5
+        },
+        {
+          "true": "coughing",
+          "predicted": "sneezing",
+          "clips": 5
+        },
+        {
+          "true": "water_drops",
+          "predicted": "can_opening",
+          "clips": 4
+        },
+        {
+          "true": "mouse_click",
+          "predicted": "water_drops",
+          "clips": 4
+        }
+      ]
+    },
+    "B_embeddings_svm_rbf": {
+      "accuracy": 0.787,
+      "fold_accuracies": [
+        0.755,
+        0.805,
+        0.7725,
+        0.7925,
+        0.81
+      ],
+      "fold_std": 0.0205791156272567,
+      "macro_f1": 0.7901312710456443,
+      "per_class_f1": {
+        "dog": 0.8533333333333334,
+        "rooster": 0.7209302325581395,
+        "pig": 0.7341772151898734,
+        "cow": 0.7894736842105263,
+        "frog": 0.8536585365853658,
+        "cat": 0.704225352112676,
+        "hen": 0.8108108108108109,
+        "insects": 0.7945205479452054,
+        "sheep": 0.9230769230769231,
+        "crow": 0.9473684210526315,
+        "rain": 0.95,
+        "sea_waves": 0.9382716049382716,
+        "crackling_fire": 0.85,
+        "crickets": 0.825,
+        "chirping_birds": 0.875,
+        "water_drops": 0.4225352112676056,
+        "wind": 0.6666666666666666,
+        "pouring_water": 0.9629629629629629,
+        "toilet_flush": 0.95,
+        "thunderstorm": 0.9135802469135802,
+        "crying_baby": 0.9230769230769231,
+        "sneezing": 0.5747126436781609,
+        "clapping": 0.8918918918918919,
+        "breathing": 0.6329113924050633,
+        "coughing": 0.6888888888888889,
+        "footsteps": 0.8648648648648649,
+        "laughing": 0.691358024691358,
+        "brushing_teeth": 0.9,
+        "snoring": 0.8354430379746836,
+        "drinking_sipping": 0.6274509803921569,
+        "door_wood_knock": 0.725,
+        "mouse_click": 0.4782608695652174,
+        "keyboard_typing": 0.88,
+        "door_wood_creaks": 0.65,
+        "can_opening": 0.6067415730337079,
+        "washing_machine": 0.5517241379310345,
+        "vacuum_cleaner": 0.8533333333333334,
+        "clock_alarm": 0.9333333333333333,
+        "clock_tick": 0.7654320987654321,
+        "glass_breaking": 0.6521739130434783,
+        "helicopter": 0.6301369863013698,
+        "chainsaw": 0.9047619047619048,
+        "siren": 0.9113924050632911,
+        "car_horn": 0.7631578947368421,
+        "engine": 0.8148148148148148,
+        "train": 0.9285714285714286,
+        "church_bells": 1.0,
+        "airplane": 0.5897435897435898,
+        "fireworks": 0.8717948717948718,
+        "hand_saw": 0.88
+      },
+      "train_and_predict_seconds": 11.348314499948174,
+      "top_confusions": [
+        {
+          "true": "keyboard_typing",
+          "predicted": "mouse_click",
+          "clips": 7
+        },
+        {
+          "true": "airplane",
+          "predicted": "helicopter",
+          "clips": 6
+        },
+        {
+          "true": "helicopter",
+          "predicted": "airplane",
+          "clips": 6
+        },
+        {
+          "true": "water_drops",
+          "predicted": "drinking_sipping",
+          "clips": 5
+        },
+        {
+          "true": "water_drops",
+          "predicted": "clock_tick",
+          "clips": 5
+        },
+        {
+          "true": "coughing",
+          "predicted": "sneezing",
+          "clips": 5
+        },
+        {
+          "true": "sneezing",
+          "predicted": "coughing",
+          "clips": 5
+        },
+        {
+          "true": "cow",
+          "predicted": "pig",
+          "clips": 5
+        }
+      ]
+    },
+    "B_embeddings_knn_5": {
+      "accuracy": 0.684,
+      "fold_accuracies": [
+        0.68,
+        0.67,
+        0.6825,
+        0.6775,
+        0.71
+      ],
+      "fold_std": 0.01365650028374764,
+      "macro_f1": 0.686617885509261,
+      "per_class_f1": {
+        "dog": 0.7032967032967034,
+        "rooster": 0.6470588235294118,
+        "pig": 0.5833333333333334,
+        "cow": 0.5977011494252874,
+        "frog": 0.7368421052631579,
+        "cat": 0.5238095238095238,
+        "hen": 0.75,
+        "insects": 0.7222222222222222,
+        "sheep": 0.8717948717948718,
+        "crow": 0.8051948051948052,
+        "rain": 0.9487179487179487,
+        "sea_waves": 0.8809523809523809,
+        "crackling_fire": 0.7272727272727273,
+        "crickets": 0.7142857142857143,
+        "chirping_birds": 0.825,
+        "water_drops": 0.38636363636363635,
+        "wind": 0.5897435897435898,
+        "pouring_water": 0.6666666666666666,
+        "toilet_flush": 0.9743589743589743,
+        "thunderstorm": 0.8809523809523809,
+        "crying_baby": 0.9382716049382716,
+        "sneezing": 0.27848101265822783,
+        "clapping": 0.8450704225352113,
+        "breathing": 0.5098039215686274,
+        "coughing": 0.4594594594594595,
+        "footsteps": 0.7428571428571429,
+        "laughing": 0.6885245901639344,
+        "brushing_teeth": 0.8333333333333334,
+        "snoring": 0.7837837837837838,
+        "drinking_sipping": 0.40425531914893614,
+        "door_wood_knock": 0.5352112676056338,
+        "mouse_click": 0.2857142857142857,
+        "keyboard_typing": 0.8648648648648649,
+        "door_wood_creaks": 0.5679012345679012,
+        "can_opening": 0.3614457831325301,
+        "washing_machine": 0.5,
+        "vacuum_cleaner": 0.7945205479452054,
+        "clock_alarm": 0.8888888888888888,
+        "clock_tick": 0.6153846153846154,
+        "glass_breaking": 0.5316455696202531,
+        "helicopter": 0.5974025974025974,
+        "chainsaw": 0.8089887640449438,
+        "siren": 0.7352941176470589,
+        "car_horn": 0.647887323943662,
+        "engine": 0.53125,
+        "train": 0.8636363636363636,
+        "church_bells": 1.0,
+        "airplane": 0.4927536231884058,
+        "fireworks": 0.8717948717948718,
+        "hand_saw": 0.8169014084507042
+      },
+      "train_and_predict_seconds": 1.0398850999772549,
+      "top_confusions": [
+        {
+          "true": "coughing",
+          "predicted": "sneezing",
+          "clips": 9
+        },
+        {
+          "true": "engine",
+          "predicted": "washing_machine",
+          "clips": 8
+        },
+        {
+          "true": "airplane",
+          "predicted": "helicopter",
+          "clips": 8
+        },
+        {
+          "true": "sneezing",
+          "predicted": "breathing",
+          "clips": 7
+        },
+        {
+          "true": "mouse_click",
+          "predicted": "can_opening",
+          "clips": 6
+        },
+        {
+          "true": "helicopter",
+          "predicted": "washing_machine",
+          "clips": 6
+        },
+        {
+          "true": "vacuum_cleaner",
+          "predicted": "washing_machine",
+          "clips": 6
+        },
+        {
+          "true": "clock_tick",
+          "predicted": "water_drops",
+          "clips": 6
+        }
+      ]
+    }
+  }
+}

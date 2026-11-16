@@ -48,6 +48,25 @@ To print the top five classes for one file:
 python scripts/yamnet_top5.py path/to/audio.wav
 ```
 
+## Evaluating on ESC-50
+
+Download [ESC-50](https://github.com/karolpiczak/ESC-50) and put its `audio/`
+and `meta/` folders in `data/ESC-50/`, then run:
+
+```bash
+python scripts/evaluate_esc50.py
+```
+
+It compares YAMNet's mapped labels with a classifier trained on YAMNet
+embeddings, using ESC-50's five folds, and writes
+`docs/evaluation/results.json`. The write-up is in `docs/evaluation.md`.
+
+## Documentation
+
+- `docs/requirements.md`: user stories and numbered requirements
+- `docs/evaluation.md`: ESC-50 results and what they mean for the app
+- `docs/devlog.md`: dated log of what was done, why, and where AI helped
+
 ## Hosting
 
 The app can be hosted on Streamlit Community Cloud with `app.py` as the entry
