@@ -24,9 +24,11 @@ report; follow S back to its primary source first.
 
 **Relevance to Earitation.** The app's categories (chewing, typing,
 clicking, banging, alarms) are trigger sounds for misophonia and common
-office distractions. Note that **speech is not one of the app's categories**,
-although the office research says speech is the biggest distractor. Is that a
-scope decision to justify, or a gap?
+office distractions. Speech was added as a category on 2026-11-16 with a high
+threshold so that only loud speech counts (decision D4). Note the tension:
+the research above says *intelligibility*, not loudness, predicts
+distraction, so quiet but clear nearby speech may matter more than the rule
+allows. That is a point to weigh in the report.
 
 ## 2. Possible stakeholders
 
@@ -122,8 +124,8 @@ maintenance costs, and a pricing model.
 5. Check the tensorflow/models LICENSE file and the YAMNet README.
 6. Search app stores and Google Scholar for products or prototypes that both
    detect sounds and respond with audio.
-7. Decide how the report handles speech, the biggest office distractor and
-   not one of the app's categories.
+7. Decide how the report discusses loud speech versus intelligible speech
+   (see section 1 and decision D4).
 
 ## Sources consulted
 

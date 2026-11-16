@@ -24,16 +24,17 @@ from sensoryaware.predictions import FramePredictions
 
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
 CLASS_NAMES = tuple(
-    sorted({label for c in DEFAULT_CONFIG.categories for label in c.labels})
-) + ("Speech", "Silence")
+    sorted({label for c in DEFAULT_CONFIG.categories for label in c.labels} | {"Speech", "Silence"})
+)
 NUM_FRAMES = 10
 
 
-def wav_bytes(seconds=5.0, rate=16000):
-    """A short, quiet tone; its content is irrelevant to the stand-in model."""
+def wav_bytes(seconds=5.0, rate=16000, amplitude=0.1):
+    """A tone. The stand-in model ignores its content, but its loudness is
+    measured for real: amplitude 0.1 is about -23 dBFS, 0.5 about -9 dBFS."""
     t = np.arange(int(seconds * rate)) / rate
     buffer = io.BytesIO()
-    sf.write(buffer, 0.1 * np.sin(2 * np.pi * 440 * t), rate, format="WAV")
+    sf.write(buffer, amplitude * np.sin(2 * np.pi * 440 * t), rate, format="WAV")
     return buffer.getvalue()
 
 
@@ -200,6 +201,39 @@ def test_corrupt_upload_shows_an_error_and_no_results(app):
     assert len(app.error) == 1
     assert FakeClassifier.calls == 0
     assert all(h.value != "Recommendation" for h in app.subheader)
+
+
+# --- Loud speech (FR12) ------------------------------------------------------
+
+
+def test_loud_speech_gets_stronger_masking(app):
+    FakeClassifier.frames_by_label = {"Speech": [0, 1, 2, 3, 4, 5]}
+    upload(consent(app), data=wav_bytes(amplitude=0.5))
+    assert "Stronger masking audio" in recommendation(app)
+    text = " ".join(m.value for m in app.markdown)
+    assert "-20 dBFS" in text
+
+
+def test_quiet_speech_is_ignored(app):
+    FakeClassifier.frames_by_label = {"Speech": [0, 1, 2, 3, 4, 5]}
+    upload(consent(app), data=wav_bytes(amplitude=0.01))
+    assert "No intervention recommended" in recommendation(app)
+
+
+def test_background_speech_below_the_speech_threshold_is_ignored(app):
+    # The stand-in scores Speech 0.3 in every frame: above the global 0.2
+    # threshold but below speech's own 0.6, so even loud audio does not trigger.
+    upload(consent(app), data=wav_bytes(amplitude=0.5))
+    assert "No intervention recommended" in recommendation(app)
+
+
+def test_raising_the_speech_loudness_setting_changes_the_decision(app):
+    FakeClassifier.frames_by_label = {"Speech": [0, 1, 2, 3, 4, 5]}
+    upload(consent(app), data=wav_bytes(amplitude=0.5))
+    assert "Stronger masking audio" in recommendation(app)
+    loudness = next(s for s in app.slider if "minimum loudness" in s.label)
+    loudness.set_value(-3).run()
+    assert "No intervention recommended" in recommendation(app)
 
 
 # --- Labels the model lacks (FR11) -------------------------------------------

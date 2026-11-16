@@ -43,3 +43,26 @@ def load_audio(source) -> np.ndarray:
             waveform, TARGET_SAMPLE_RATE // divisor, sample_rate // divisor
         )
     return np.clip(waveform, -1.0, 1.0).astype(np.float32)
+
+
+# YAMNet scores one frame every 0.48 s, each covering 0.96 s of audio.
+FRAME_HOP = int(0.48 * TARGET_SAMPLE_RATE)
+FRAME_LENGTH = int(0.96 * TARGET_SAMPLE_RATE)
+LEVEL_FLOOR_DB = -100.0
+
+
+def frame_levels_db(waveform: np.ndarray, num_frames: int) -> np.ndarray:
+    """RMS loudness of each YAMNet frame, in dB relative to full scale (dBFS).
+
+    0 dBFS is the loudest a recording can hold, so values are negative. They
+    depend on the microphone's gain: they compare sounds within one setup
+    rather than measuring sound pressure in the room.
+    """
+    levels = np.full(num_frames, LEVEL_FLOOR_DB)
+    for i in range(num_frames):
+        window = waveform[i * FRAME_HOP : i * FRAME_HOP + FRAME_LENGTH]
+        if window.size:
+            rms = float(np.sqrt(np.mean(np.square(window, dtype=np.float64))))
+            if rms > 0:
+                levels[i] = max(20 * np.log10(rms), LEVEL_FLOOR_DB)
+    return levels

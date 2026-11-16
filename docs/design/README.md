@@ -15,10 +15,10 @@ module. Data flows left to right and the decision comes back to the interface.
 | Module | Responsibility | Depends on | Requirements |
 | --- | --- | --- | --- |
 | `app.py` | Streamlit interface: notice, consent gate, settings, input, results | Streamlit and the modules below | FR1, FR4, FR5, NFR4, NFR6 |
-| `audio.py` | Decode an upload or recording, convert to 16 kHz mono, reject bad input | soundfile, SciPy | FR1, FR2 |
+| `audio.py` | Decode an upload or recording, convert to 16 kHz mono, reject bad input; measure each frame's loudness | soundfile, SciPy | FR1, FR2, FR12 |
 | `model.py` | Run YAMNet: per-frame scores for 521 labels, and embeddings | TensorFlow, TensorFlow Hub | FR3, NFR3 |
 | `predictions.py` | Hold the frames × labels score table; rank the top labels | NumPy | FR4 |
-| `decision.py` | Apply the rules; produce intervention, explanation, evidence | NumPy only | FR6–FR11, NFR2, NFR5 |
+| `decision.py` | Apply the rules; produce intervention, explanation, evidence | NumPy only | FR6–FR12, NFR2, NFR5 |
 | `config.py` | Default categories, labels, interventions and thresholds | `decision.py` | FR5 |
 | `evaluation.py` | Offline ESC-50 comparison (not used by the app) | scikit-learn | ML investigation |
 
@@ -47,6 +47,7 @@ module. Data flows left to right and the decision comes back to the interface.
 | `app.py` → `audio.py` | The bytes, wrapped as an in-memory file |
 | `audio.py` → `model.py` | Float32 waveform, 16 kHz mono, values in [-1, 1], at most 5 minutes |
 | `model.py` → `decision.py` | `FramePredictions`: label names and a frames × 521 score table (one frame per 0.48 s) |
+| `audio.py` → `decision.py` (via `app.py`) | Loudness of each frame in dBFS, attached to the predictions |
 | `config.py` + sidebar → `decision.py` | `EngineConfig`: categories, labels, threshold, minimum frames, interventions |
 | `decision.py` → `app.py` | `Decision`: intervention or none, explanation, per-category evidence, warnings |
 
@@ -62,6 +63,13 @@ The category triggers if at least the minimum number of frames count
 | None | No intervention (FR9) |
 | One | That category's intervention (FR7) |
 | Two or more | General focus audio (FR8) |
+
+A category can set its own score threshold and a minimum loudness (FR12).
+Only **Loud speech** does: a frame counts only if a speech label scores at
+least 0.6 *and* the frame is at least -20 dBFS loud. Loudness is the RMS
+level of the same 0.96 s window YAMNet scored, measured relative to the
+loudest value a recording can hold, so it depends on the microphone's gain;
+the sidebar lets the user adjust it (decision D4).
 
 Labels that YAMNet does not have are reported as warnings and ignored (FR11).
 The defaults are provisional; see the evaluation's limitations.

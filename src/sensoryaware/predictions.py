@@ -21,12 +21,18 @@ class FramePredictions:
 
     class_names: tuple[str, ...]
     scores: np.ndarray
+    levels_db: np.ndarray | None = None  # loudness of each frame, if measured
 
     def __post_init__(self):
         if self.scores.ndim != 2 or self.scores.shape[1] != len(self.class_names):
             raise ValueError(
                 f"Expected scores of shape (frames, {len(self.class_names)}), "
                 f"got {self.scores.shape}"
+            )
+        if self.levels_db is not None and self.levels_db.shape != (self.num_frames,):
+            raise ValueError(
+                f"Expected one loudness level per frame ({self.num_frames}), "
+                f"got {self.levels_db.shape}"
             )
 
     @property

@@ -9,7 +9,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from sensoryaware.audio import AudioLoadError, load_audio  # noqa: E402
+from sensoryaware.audio import AudioLoadError, frame_levels_db, load_audio  # noqa: E402
 from sensoryaware.config import DEFAULT_CONFIG  # noqa: E402
 from sensoryaware.decision import decide  # noqa: E402
 from sensoryaware.model import YamnetClassifier  # noqa: E402
@@ -26,8 +26,20 @@ def build_config():
     selected = st.sidebar.multiselect(
         "Sounds that distract you", list(by_name), default=list(by_name)
     )
+    own_thresholds = ", ".join(
+        f"{c.name} ({c.min_score:.2f})"
+        for c in DEFAULT_CONFIG.categories
+        if c.min_score is not None
+    )
     min_score = st.sidebar.slider(
-        "Score threshold", 0.05, 1.0, DEFAULT_CONFIG.min_score, 0.05
+        "Score threshold",
+        0.05,
+        1.0,
+        DEFAULT_CONFIG.min_score,
+        0.05,
+        help=f"Applies to every category except those with their own: {own_thresholds}."
+        if own_thresholds
+        else None,
     )
     min_frames = st.sidebar.slider(
         "Minimum frames detected",
@@ -37,6 +49,19 @@ def build_config():
         help="YAMNet scores about two frames per second, and one short sound "
         "usually appears in two or three of them.",
     )
+    for name, category in by_name.items():
+        if name in selected and category.min_level_db is not None:
+            level = st.sidebar.slider(
+                f"{name}: minimum loudness (dBFS)",
+                -60,
+                0,
+                int(category.min_level_db),
+                1,
+                help="Quieter frames are ignored for this category. 0 is the loudest "
+                "a recording can be. The right value depends on your microphone, so "
+                "compare a normal and a loud recording to set it.",
+            )
+            by_name[name] = dataclasses.replace(category, min_level_db=float(level))
     return dataclasses.replace(
         DEFAULT_CONFIG,
         categories=tuple(by_name[name] for name in selected),
@@ -130,6 +155,9 @@ except Exception as error:
 
 with st.spinner("Analysing audio..."):
     predictions = classifier.classify(waveform)
+    predictions = dataclasses.replace(
+        predictions, levels_db=frame_levels_db(waveform, predictions.num_frames)
+    )
 
 st.subheader("Top sounds detected")
 st.table(

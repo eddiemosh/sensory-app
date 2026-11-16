@@ -1,7 +1,9 @@
 """Transparent rules that turn frame predictions into a recommendation.
 
 A category triggers when any of its YAMNet labels reaches `min_score` in at
-least `min_frames` frames of the clip. YAMNet frames overlap (0.96 s long, every
+least `min_frames` frames of the clip. A category can set its own, stricter
+score threshold, and can require each counted frame to reach a loudness level
+(used for speech, where only loud speech matters). YAMNet frames overlap (0.96 s long, every
 0.48 s), so one short sound usually appears in two or three frames; `min_frames`
 has to be above that for "repeated" to mean anything.
 """
@@ -26,6 +28,8 @@ class SoundCategory:
     name: str
     labels: tuple[str, ...]
     intervention_id: str
+    min_score: float | None = None  # overrides EngineConfig.min_score
+    min_level_db: float | None = None  # frames quieter than this do not count
 
 
 @dataclass(frozen=True)
@@ -41,6 +45,11 @@ class EngineConfig:
             raise ValueError("min_score must be above 0 and at most 1")
         if self.min_frames < 1:
             raise ValueError("min_frames must be at least 1")
+        for category in self.categories:
+            if category.min_score is not None and not 0 < category.min_score <= 1:
+                raise ValueError(f"{category.name}: min_score must be above 0 and at most 1")
+            if category.min_level_db is not None and category.min_level_db > 0:
+                raise ValueError(f"{category.name}: min_level_db must be 0 dBFS or below")
         known = {intervention.id for intervention in self.interventions}
         used = {category.intervention_id for category in self.categories}
         used.add(self.multi_category_intervention)
@@ -49,6 +58,9 @@ class EngineConfig:
 
     def intervention(self, intervention_id: str) -> Intervention:
         return next(i for i in self.interventions if i.id == intervention_id)
+
+    def score_threshold(self, category: SoundCategory) -> float:
+        return self.min_score if category.min_score is None else category.min_score
 
 
 @dataclass(frozen=True)
@@ -83,7 +95,13 @@ def _evaluate_category(
         )
 
     scores = predictions.scores[:, [indices[label] for label in known_labels]]
-    frames_detected = int((scores.max(axis=1) >= config.min_score).sum())
+    counted = scores.max(axis=1) >= config.score_threshold(category)
+    if category.min_level_db is not None:
+        if predictions.levels_db is None:
+            counted[:] = False
+        else:
+            counted &= predictions.levels_db >= category.min_level_db
+    frames_detected = int(counted.sum())
     _, peak_column = np.unravel_index(scores.argmax(), scores.shape)
     return CategoryEvidence(
         category=category.name,
@@ -95,8 +113,12 @@ def _evaluate_category(
     )
 
 
-def _rule_text(config: EngineConfig) -> str:
-    return f"needs at least {config.min_frames} at score {config.min_score:.2f} or above"
+def _rule_text(config: EngineConfig, category: SoundCategory | None = None) -> str:
+    score = config.min_score if category is None else config.score_threshold(category)
+    text = f"needs at least {config.min_frames} at score {score:.2f} or above"
+    if category is not None and category.min_level_db is not None:
+        text += f" and at least {category.min_level_db:.0f} dBFS loud"
+    return text
 
 
 def _frames_text(item: CategoryEvidence) -> str:
@@ -114,7 +136,8 @@ def _explain_no_trigger(
             f"{predictions.num_frames} analysis frames and a sound "
             f"{_rule_text(config)}. No intervention recommended."
         )
-    closest = max(evidence, key=lambda item: item.frames_detected)
+    closest_index = max(range(len(evidence)), key=lambda i: evidence[i].frames_detected)
+    closest, closest_category = evidence[closest_index], config.categories[closest_index]
     if closest.frames_detected == 0:
         return (
             "No configured distracting category was detected in this clip. "
@@ -122,7 +145,8 @@ def _explain_no_trigger(
         )
     return (
         f"No configured category met the rule in this clip. The closest was "
-        f"{closest.category}, in {_frames_text(closest)} ({_rule_text(config)}). "
+        f"{closest.category}, in {_frames_text(closest)} "
+        f"({_rule_text(config, closest_category)}). "
         f"No intervention recommended."
     )
 
@@ -135,6 +159,11 @@ def decide(predictions: FramePredictions, config: EngineConfig) -> Decision:
         for category in config.categories
         for label in category.labels
         if label not in known
+    ) + tuple(
+        f"{category.name} needs loudness levels, which were not measured for this "
+        f"clip, so it was not assessed."
+        for category in config.categories
+        if category.min_level_db is not None and predictions.levels_db is None
     )
 
     if not config.categories:
@@ -167,7 +196,7 @@ def decide(predictions: FramePredictions, config: EngineConfig) -> Decision:
         intervention = config.intervention(category.intervention_id)
         explanation = (
             f"{item.category} was detected in {_frames_text(item)} in this clip "
-            f"({_rule_text(config)}; peak {item.peak_score:.2f} for "
+            f"({_rule_text(config, category)}; peak {item.peak_score:.2f} for "
             f"'{item.peak_label}'). Recommended: {intervention.name}."
         )
     else:

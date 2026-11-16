@@ -6,7 +6,13 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from sensoryaware.audio import TARGET_SAMPLE_RATE, AudioLoadError, load_audio
+from sensoryaware.audio import (
+    LEVEL_FLOOR_DB,
+    TARGET_SAMPLE_RATE,
+    AudioLoadError,
+    frame_levels_db,
+    load_audio,
+)
 
 
 def write_wav(path, samples, sample_rate):
@@ -85,3 +91,33 @@ def test_non_finite_samples_are_rejected(tmp_path):
     sf.write(path, np.full(100, np.nan, dtype=np.float32), 16000, subtype="FLOAT")
     with pytest.raises(AudioLoadError, match="invalid"):
         load_audio(path)
+
+
+# --- Frame loudness (FR12) ---------------------------------------------------
+
+
+def test_full_scale_sine_is_about_minus_3_dbfs():
+    t = np.arange(TARGET_SAMPLE_RATE * 3) / TARGET_SAMPLE_RATE
+    levels = frame_levels_db(np.sin(2 * np.pi * 440 * t).astype(np.float32), 5)
+    assert levels == pytest.approx([-3.01] * 5, abs=0.05)
+
+
+def test_silence_has_the_floor_level():
+    assert frame_levels_db(np.zeros(TARGET_SAMPLE_RATE * 2, dtype=np.float32), 3).tolist() == [
+        LEVEL_FLOOR_DB
+    ] * 3
+
+
+def test_levels_follow_yamnet_frame_timing():
+    # Quiet for the first 2 s, loud after: frame i covers i*0.48 s to i*0.48+0.96 s.
+    rate = TARGET_SAMPLE_RATE
+    waveform = np.concatenate([np.full(2 * rate, 0.001), np.full(2 * rate, 0.5)]).astype(np.float32)
+    levels = frame_levels_db(waveform, 7)
+    assert levels[0] < -50          # 0.00-0.96 s, all quiet
+    assert levels[5] == pytest.approx(20 * np.log10(0.5), abs=0.01)  # 2.40-3.36 s, all loud
+    assert levels[0] < levels[3] < levels[5]  # 1.44-2.40 s straddles the change
+
+
+def test_frames_past_the_end_get_the_floor_level():
+    levels = frame_levels_db(np.full(TARGET_SAMPLE_RATE, 0.5, dtype=np.float32), 4)
+    assert levels[-1] == LEVEL_FLOOR_DB

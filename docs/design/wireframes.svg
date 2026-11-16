@@ -13,7 +13,7 @@
   <rect x="42" y="118" width="86" height="44" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="47" y="132" font-size="9" fill="#64748b">[clicking] [typing]</text>
   <text x="47" y="144" font-size="9" fill="#64748b">[chewing] [banging]</text>
-  <text x="47" y="156" font-size="9" fill="#64748b">[alarms]</text>
+  <text x="47" y="156" font-size="9" fill="#64748b">[alarms] [speech]</text>
   <text x="42" y="184" font-size="10" fill="#475569">Score threshold</text>
   <line x1="42" y1="196" x2="128" y2="196" stroke="#94a3b8" stroke-width="3"/>
   <circle cx="58" cy="196" r="5" fill="#64748b"/>
