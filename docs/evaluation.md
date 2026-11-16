@@ -25,8 +25,11 @@ between training and test data and inflate Arm B.
 | B: SVM (RBF) | 0.787 | 0.021 | 0.790 |
 | B: 5-NN | 0.684 | 0.014 | 0.687 |
 
-Chance is 0.02. For context, Piczak (2015) reports human listeners at about
-81% on ESC-50 (check this citation before using it).
+Chance is 0.02. For context, human listeners scored 81.3% on ESC-50 in a
+crowdsourcing experiment (Piczak, K. J. "ESC: Dataset for Environmental Sound
+Classification", Proceedings of the 23rd ACM International Conference on
+Multimedia, 2015, doi:10.1145/2733373.2806390; figure confirmed on the
+dataset's GitHub page on 2026-11-16).
 
 ### Classes closest to the app's purpose (F1)
 

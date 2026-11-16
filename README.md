@@ -68,6 +68,7 @@ embeddings, using ESC-50's five folds, and writes
 - `docs/decisions.md`: design decisions with the options considered
 - `docs/traceability.md`: which tests check each requirement
 - `docs/evaluation.md`: ESC-50 results and what they mean for the app
+- `docs/business-research.md`: sourced notes for the business analysis
 - `docs/devlog.md`: dated log of what was done, why, and where AI helped
 
 ## Hosting
