@@ -368,3 +368,48 @@ and researched Spotify's API terms.
 (Premium, 5 allow-listed users, no wider release without meeting the
 extended-quota criteria). D5 now records automatic playback as the chosen
 future route, with playlist links as the fallback. Nothing is built yet.
+
+---
+
+## 2026-11-16: Pull requests merged and branches tidied
+
+**Done**
+- Raised the five stacked feature branches as pull requests #1 to #5 and
+  merged them into `main` in order, each with a merge commit after its CI run
+  passed.
+- Deleted the merged branches and `repo-setup`, and switched the GitHub
+  default branch from `repo-setup` to `main`.
+- Kept `feature/poc`: it holds one dev-container commit not in `main`, and the
+  hosted app may still deploy from it.
+
+**AI assistance**: Claude raised and merged the pull requests in the browser
+and cleaned up the branches at my request.
+
+---
+
+## 2026-11-23: Full report draft written by AI
+
+**Done**
+- At my request, Claude wrote a complete first draft of the report, all eight
+  sections plus a draft AI declaration, as a Claude Docs document:
+  https://claude.ai/artifact/KDqYbenrfGD1kd4DAUiNog
+- The draft uses figures from this repository (evaluation results, test
+  counts, decisions D1 to D5) and the sources in `business-research.md`.
+- About 3,100 to 3,200 words across sections 1 to 7 by estimate; section 2 is
+  about 70 words over its budget.
+
+**Decisions**
+- My plan said the report's analysis and conclusions should be my own work,
+  with AI limited to planning, structure and code. I chose to have AI draft
+  every section anyway, as a starting point to rewrite. This must be stated in
+  the AI declaration, and the draft rewritten in my own words before
+  submission.
+
+**Still to do in the draft**
+- Items marked [verify]: several reference details (Venetjoki et al., Gong et
+  al., Poulsen et al., Roelofsen, ICO guidance status, Access to Work).
+- Items marked [add]: real-recording results, two figures, a results
+  screenshot, the transcript reference, the final commit count.
+
+**AI assistance**: Claude wrote the whole draft. My own rewrite and checks are
+to be recorded here when done.
