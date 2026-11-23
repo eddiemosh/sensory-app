@@ -413,3 +413,24 @@ and cleaned up the branches at my request.
 
 **AI assistance**: Claude wrote the whole draft. My own rewrite and checks are
 to be recorded here when done.
+
+---
+
+## 2026-11-23: Real-recording test set up, and a model-cache fix
+
+**Done**
+- `scripts/analyse_recordings.py` runs the app's full pipeline, with default
+  settings, on a folder of my own recordings (`data/recordings/`, git-ignored)
+  and writes a results table to `docs/evaluation/real-recordings.md`: the
+  recommendation, the top YAMNet labels, frames detected per category, and the
+  loudness of confident-speech frames, to judge the -20 dBFS default.
+- Checked it on synthetic clips: 10 s of repeated beeps gave stronger masking
+  (Alarms and beeps in 20 of 20 frames), and silence gave nothing.
+
+**Problem found**
+- YAMNet would not load: Windows had part-cleaned TensorFlow Hub's cache in
+  the system temp folder, and the loader fails on a broken cache instead of
+  downloading again. The app would have failed the same way. The cache now
+  lives in the project's git-ignored `tfhub_cache/` folder. All 92 tests pass.
+
+**AI assistance**: Claude wrote the script, found and fixed the cache problem.
