@@ -12,7 +12,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 from sensoryaware.audio import AudioLoadError, frame_levels_db, load_audio  # noqa: E402
 from sensoryaware.config import DEFAULT_CONFIG  # noqa: E402
 from sensoryaware.decision import decide  # noqa: E402
+from sensoryaware.detector import (  # noqa: E402
+    FrameDetector,
+    add_detector_scores,
+    use_trained_detector,
+)
 from sensoryaware.model import YamnetClassifier  # noqa: E402
+
+LABELS = "YAMNet labels"
+TRAINED = "Trained detector (experimental)"
 
 
 @st.cache_resource(show_spinner="Loading YAMNet...")
@@ -20,22 +28,38 @@ def get_classifier() -> YamnetClassifier:
     return YamnetClassifier()
 
 
+@st.cache_resource(show_spinner="Loading the trained detector...")
+def get_detector() -> FrameDetector:
+    return FrameDetector.load()
+
+
 def build_config():
     st.sidebar.header("Your settings")
-    by_name = {category.name: category for category in DEFAULT_CONFIG.categories}
+    method = st.sidebar.radio(
+        "Detection method",
+        [LABELS, TRAINED],
+        help="YAMNet labels: named sound labels from Google's pretrained model. "
+        "Trained detector: a model trained for this app on the ESC-50 dataset; it "
+        "finds clicks far more often but has not been tested on everyday talking "
+        "or music. It covers clicking, typing, banging and alarms; chewing and "
+        "loud speech always use YAMNet labels. ESC-50 is licensed for "
+        "non-commercial use only.",
+    )
+    base = use_trained_detector(DEFAULT_CONFIG) if method == TRAINED else DEFAULT_CONFIG
+    by_name = {category.name: category for category in base.categories}
     selected = st.sidebar.multiselect(
         "Sounds that distract you", list(by_name), default=list(by_name)
     )
     own_thresholds = ", ".join(
         f"{c.name} ({c.min_score:.2f})"
-        for c in DEFAULT_CONFIG.categories
+        for c in base.categories
         if c.min_score is not None
     )
     min_score = st.sidebar.slider(
         "Score threshold",
         0.05,
         1.0,
-        DEFAULT_CONFIG.min_score,
+        base.min_score,
         0.05,
         help=f"Applies to every category except those with their own: {own_thresholds}."
         if own_thresholds
@@ -62,12 +86,13 @@ def build_config():
                 "compare a normal and a loud recording to set it.",
             )
             by_name[name] = dataclasses.replace(category, min_level_db=float(level))
-    return dataclasses.replace(
-        DEFAULT_CONFIG,
+    config = dataclasses.replace(
+        base,
         categories=tuple(by_name[name] for name in selected),
         min_score=min_score,
         min_frames=min_frames,
     )
+    return config, method == TRAINED
 
 
 def show_decision(decision):
@@ -112,7 +137,7 @@ st.info(
     "service."
 )
 
-config = build_config()
+config, use_detector = build_config()
 if not st.checkbox(
     "I understand how my audio is handled, and I will not record or upload other "
     "people without their consent."
@@ -154,18 +179,31 @@ except Exception as error:
     st.stop()
 
 with st.spinner("Analysing audio..."):
-    predictions = classifier.classify(waveform)
-    predictions = dataclasses.replace(
-        predictions, levels_db=frame_levels_db(waveform, predictions.num_frames)
+    yamnet, embeddings = classifier.analyse(waveform)
+    yamnet = dataclasses.replace(
+        yamnet, levels_db=frame_levels_db(waveform, yamnet.num_frames)
     )
+    predictions = yamnet
+    if use_detector:
+        try:
+            predictions = add_detector_scores(yamnet, get_detector(), embeddings)
+        except Exception as error:
+            st.error(f"The trained detector could not be loaded. Details: {error}")
+            st.stop()
 
 st.subheader("Top sounds detected")
 st.table(
     [
         {"Sound": item.label, "Mean score": f"{item.score:.3f}"}
-        for item in predictions.top_k(5)
+        for item in yamnet.top_k(5)
     ]
 )
-st.caption("Scores are model confidence values, not probabilities.")
+st.caption("YAMNet's scores are model confidence values, not probabilities.")
 
 show_decision(decide(predictions, config))
+if use_detector:
+    st.caption(
+        "Clicking, typing, banging and alarms were judged by the trained detector: "
+        "a frame counts when its probability is 0.5 or more. It is experimental and "
+        "has not been tested on everyday talking or music."
+    )

@@ -152,8 +152,12 @@ Reproduce with `python scripts/evaluate_app_task.py`.
 For B, each training frame takes its clip's label, except quiet frames of a
 target clip (more than 20 dB below its loudest frame), which are left out so
 silent padding is not taught as the sound. Classifier settings (C = 0.1,
-balanced class weights) were fixed in advance; B uses the same 4-frame rule
-as A, untuned.
+balanced class weights) were fixed in advance. For B, a frame counts when the
+detector's probability for a category is at least 0.5, and a category
+triggers in at least 4 frames, the same rule as A, untuned. B uses the exact
+code and rule the app ships (`sensoryaware/detector.py`); the shipped model is
+the same set-up trained once on all 2,000 clips
+(`scripts/train_frame_detector.py`).
 
 ## Results
 
@@ -161,8 +165,8 @@ as A, untuned.
 | --- | --- | --- |
 | A, default (as shipped) | 0.56 ± 0.06 | 0.047 ± 0.006 |
 | A, tuned | 0.83 ± 0.04 | 0.135 ± 0.024 |
-| B-closed | 0.95 ± 0.03 | **0.992** ± 0.005 |
-| B-open | **0.80** ± 0.06 | **0.032** ± 0.010 |
+| B-closed | 0.95 ± 0.03 | **0.981** ± 0.009 |
+| B-open (shipped as the app's trained detector) | **0.80** ± 0.06 | **0.030** ± 0.008 |
 
 Detection by category:
 
@@ -180,7 +184,7 @@ Detection by category:
 - **The closed-set concern in D3 was right.** A detector that only knows the
   target sounds fires on 99% of everything else.
 - **An "other" class fixes it.** B-open finds 80% of targets, against 56% for
-  the shipped app, with a slightly lower false-alarm rate (3.2% vs 4.7%).
+  the shipped app, with a slightly lower false-alarm rate (3.0% vs 4.7%).
   Clicking rises from 20% to 88%. Its weak spot is knocking (45%).
 - **Tuning the label thresholds is not a free win.** Every fold chose score
   0.1 and just 2 frames, which raises detection to 83% but triples false

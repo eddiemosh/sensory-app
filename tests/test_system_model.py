@@ -113,3 +113,19 @@ def test_analysis_makes_no_network_requests_or_file_writes(monkeypatch):
 def is_loopback(address):
     host = address[0] if isinstance(address, tuple) else str(address)
     return host in ("127.0.0.1", "::1", "localhost")
+
+
+def test_trained_detector_mode_runs_with_the_real_models():
+    at = AppTest.from_file(APP, default_timeout=180)
+    at.run()
+    method = next(r for r in at.radio if r.label == "Detection method")
+    method.set_value("Trained detector (experimental)").run()
+    at.checkbox[0].check().run()
+    at.file_uploader[0].upload("silence.wav", wav_bytes(np.zeros(5 * RATE)), "audio/wav").run()
+    assert not at.exception
+    assert "No intervention recommended" in recommendation(at)
+    labels = set(at.table[1].value["Peak label"])
+    assert labels <= {"-"} | {f"Trained detector: {c}" for c in ("clicking", "typing", "banging", "alarms")} | {
+        "Chewing, mastication", "Speech", "Child speech, kid speaking", "Conversation",
+        "Shout", "Yell", "Children shouting", "Hubbub, speech noise, speech babble",
+    }

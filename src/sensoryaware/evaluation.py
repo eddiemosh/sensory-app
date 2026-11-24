@@ -16,6 +16,8 @@ from typing import Callable, Mapping, Sequence
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
 
+from sensoryaware.detector import frame_training_labels  # noqa: F401  (shared with the app)
+
 # Hand-written mapping from each ESC-50 class to the YAMNet labels that
 # describe it. No label is used for two classes, so a clip's prediction is never
 # a tie decided by list order. Weak or indirect mappings are marked; they are a
@@ -143,7 +145,6 @@ APP_TARGETS = {
     "door_wood_knock": "banging",
     "clock_alarm": "alarms",
 }
-TRAINING_QUIET_DB = 20.0  # target-clip frames this far below the loudest are dropped
 
 
 def category_frame_scores(scores, class_names, categories) -> np.ndarray:
@@ -185,19 +186,6 @@ def detection_summary(triggered, expected, category_names) -> dict:
         "target_clips": int(target.sum()),
         "other_clips": int(other.sum()),
     }
-
-
-def frame_training_labels(levels, category, other: int, quiet_db=TRAINING_QUIET_DB):
-    """Frame labels for training a detector from clip labels.
-
-    A target clip's sound is in its loud frames; its quiet frames (often padding)
-    are dropped (-1) rather than mislabelled. Every frame of a non-target clip is
-    "other".
-    """
-    if category is None:
-        return np.full(len(levels), other)
-    loud = (levels >= levels.max() - quiet_db) & (levels > -100.0)
-    return np.where(loud, category, -1)
 
 
 @dataclass(frozen=True)

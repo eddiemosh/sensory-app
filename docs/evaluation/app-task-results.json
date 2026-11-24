@@ -96,19 +96,19 @@
       },
       "mean_detection_rate": 0.953125,
       "overall_detection_rate": 0.94,
-      "false_alarm_rate": 0.9916666666666667,
+      "false_alarm_rate": 0.9805555555555555,
       "false_alarms_by_category": {
-        "clicking": 836,
-        "typing": 285,
+        "clicking": 818,
+        "typing": 276,
         "chewing": 0,
-        "banging": 755,
-        "alarms": 265
+        "banging": 744,
+        "alarms": 256
       },
       "wrong_category_rate": 0.16,
       "target_clips": 200,
       "other_clips": 1800,
       "mean_detection_rate_fold_std": 0.02614562582918986,
-      "false_alarm_rate_fold_std": 0.005270462766947316,
+      "false_alarm_rate_fold_std": 0.008606629658238718,
       "wrong_category_rate_fold_std": 0.025495097567963927
     },
     "B-open trained, targets + other": {
@@ -120,19 +120,19 @@
       },
       "mean_detection_rate": 0.8,
       "overall_detection_rate": 0.815,
-      "false_alarm_rate": 0.03222222222222222,
+      "false_alarm_rate": 0.03,
       "false_alarms_by_category": {
-        "clicking": 32,
+        "clicking": 29,
         "typing": 10,
         "chewing": 0,
-        "banging": 16,
+        "banging": 14,
         "alarms": 1
       },
       "wrong_category_rate": 0.06,
       "target_clips": 200,
       "other_clips": 1800,
       "mean_detection_rate_fold_std": 0.06358434359179939,
-      "false_alarm_rate_fold_std": 0.009558139185602919,
+      "false_alarm_rate_fold_std": 0.008314794192830979,
       "wrong_category_rate_fold_std": 0.030000000000000002
     }
   }

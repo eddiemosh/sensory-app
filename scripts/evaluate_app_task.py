@@ -14,7 +14,11 @@ least 4 frames) and ESC-50's five folds:
   A-tuned    YAMNet labels, thresholds chosen on four folds and tested on the fifth
   B-closed   a frame classifier trained on the target sounds only, so every frame
              is forced into one of them (tests the closed-set concern in D3)
-  B-open     the same with an extra "other" class trained on the 45 other classes
+  B-open     the same with an extra "other" class trained on the 45 other classes;
+             this is the detector the app ships (sensoryaware.detector)
+
+B arms count a frame when the detector's probability for a category is at least
+0.5, the shipped rule, and use the shipped training code.
 
 Loud speech is left out: ESC-50 has no speech class, and its recording levels
 say nothing about a user's microphone. Per-frame features are cached in
@@ -28,9 +32,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -38,12 +39,19 @@ sys.path.insert(0, str(ROOT / "src"))
 from sensoryaware.audio import frame_levels_db, load_audio  # noqa: E402
 from sensoryaware.config import DEFAULT_CONFIG  # noqa: E402
 from sensoryaware.decision import decide  # noqa: E402
+from sensoryaware.detector import (  # noqa: E402
+    DETECTION_THRESHOLD,
+    DETECTOR_CATEGORIES,
+    OTHER,
+    FrameDetector,
+    fit_detector,
+    training_frames,
+)
 from sensoryaware.evaluation import (  # noqa: E402
     APP_TARGETS,
     ESC50_CATEGORIES,
     category_frame_scores,
     detection_summary,
-    frame_training_labels,
     load_metadata,
     triggered_categories,
 )
@@ -61,7 +69,6 @@ CONFIG = dataclasses.replace(
     categories=tuple(c for c in DEFAULT_CONFIG.categories if c.min_level_db is None),
 )
 CATEGORY_IDS = [c.id for c in CONFIG.categories]
-TRAINED_IDS = sorted(set(APP_TARGETS.values()), key=CATEGORY_IDS.index)  # no chewing data
 
 
 def extract(dataset):
@@ -140,35 +147,24 @@ def arm_labels(per_clip_scores, expected, folds):
 
 
 def arm_trained(data, expected, folds, open_set):
-    other = len(TRAINED_IDS)
-    columns = [CATEGORY_IDS.index(c) for c in TRAINED_IDS]
+    """Train on four folds, test on the fifth, with the shipped detector's code and rule."""
+    clip_categories = [CATEGORY_IDS[e] if e >= 0 else None for e in expected]
+    class_names = DETECTOR_CATEGORIES + ((OTHER,) if open_set else ())
+    columns = [CATEGORY_IDS.index(c) for c in DETECTOR_CATEGORIES]
     clip_of_frame = data["clip_index"]
     triggered = np.zeros((len(expected), len(CATEGORY_IDS)), dtype=bool)
     for f in np.unique(folds):
-        train_clips = np.flatnonzero(folds != f)
-        labels = np.full(len(clip_of_frame), -1)
-        for c in train_clips:
-            frames = clip_of_frame == c
-            cat = expected[c]
-            if cat >= 0:
-                labels[frames] = frame_training_labels(
-                    data["levels"][frames], TRAINED_IDS.index(CATEGORY_IDS[cat]), other
-                )
-            elif open_set:
-                labels[frames] = frame_training_labels(data["levels"][frames], None, other)
-        use = labels >= 0
-        model = make_pipeline(
-            StandardScaler(),
-            LogisticRegression(C=0.1, max_iter=3000, class_weight="balanced"),
+        x, y = training_frames(
+            data["embeddings"], data["levels"], clip_of_frame, clip_categories,
+            np.flatnonzero(folds != f), open_set=open_set,
         )
-        model.fit(data["embeddings"][use], labels[use])
+        detector = FrameDetector.from_pipeline(fit_detector(x, y), class_names, {})
         for c in np.flatnonzero(folds == f):
-            frames = clip_of_frame == c
-            predicted = model.predict(data["embeddings"][frames])
-            hits = np.zeros((frames.sum(), len(CATEGORY_IDS)))
-            for j, col in enumerate(columns):
-                hits[:, col] = predicted == j
-            triggered[c] = triggered_categories(hits, 0.5, MIN_FRAMES)
+            probs = detector.probabilities(data["embeddings"][clip_of_frame == c])
+            scores = np.zeros((len(probs), len(CATEGORY_IDS)))
+            for category, col in zip(DETECTOR_CATEGORIES, columns):
+                scores[:, col] = probs[:, detector.classes.index(category)]
+            triggered[c] = triggered_categories(scores, DETECTION_THRESHOLD, MIN_FRAMES)
     return triggered
 
 

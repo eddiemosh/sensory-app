@@ -179,10 +179,10 @@ measured the app's own task on ESC-50 (`evaluation.md`, "The app's own
 task"):
 
 - *Closed set* was **confirmed**: a frame detector trained only on the target
-  sounds fired on 99.2% of non-target clips.
+  sounds fired on 98.1% of non-target clips.
 - *Clip versus frame* was **resolved**: a detector trained on frames, with an
   "other" class, found 80% of target clips against 56% for the shipped labels,
-  with fewer false alarms (3.2% vs 4.7%).
+  with fewer false alarms (3.0% vs 4.7%).
 - Still standing: that detector has never heard talking or music, the
   commonest room sounds; ESC-50 has no chewing or speech, so labels would still
   be needed for those; its output is harder to explain; and it would put a
@@ -192,3 +192,14 @@ The case for keeping labels is therefore weaker than first argued. The
 decision is under review (my call): keep labels and present the trained
 detector as validated future work, or add it as an optional mode for the four
 categories it covers.
+
+**Resolved (2026-11-24, my decision): add the trained detector as an optional
+mode.** The sidebar offers "Detection method": YAMNet labels (the default) or
+the trained detector (experimental). In trained mode the detector judges
+clicking, typing, banging and alarms (a frame counts at probability 0.5 or
+more, in at least 4 frames); chewing and loud speech keep YAMNet's labels,
+because ESC-50 has no data for them. Labels stay the default because the
+detector has not been tested on talking or music. The app ships the exact
+model and rule that were cross-validated (80% detection, 3.0% false alarms),
+trained once on all 2,000 clips. The model is derived from ESC-50 (CC BY-NC
+3.0), so the product is non-commercial while it ships; the interface says so.

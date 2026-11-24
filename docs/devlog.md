@@ -469,3 +469,40 @@ to be recorded here when done.
 
 **AI assistance**: Claude proposed the evaluation after I asked for a
 critical review, wrote and ran it, and wrote up the results.
+
+---
+
+## 2026-11-24: Trained detector added as an optional mode
+
+**Decision (mine)**
+- After the app-task evaluation, I chose to add the trained detector to the
+  app as an optional "Detection method", keeping YAMNet labels as the default
+  (D3 resolved, new requirement FR13, user story US7).
+
+**Done**
+- `src/sensoryaware/detector.py`: shared training code, a NumPy-only
+  `FrameDetector` saved as a plain `.npz` (no pickled code), and the glue that
+  adds its probabilities to the frame scores and switches clicking, typing,
+  banging and alarms to them (threshold 0.5). Chewing and loud speech keep
+  YAMNet's labels; the top-five table stays YAMNet's.
+- The evaluation now uses this exact code and rule. Re-run under the shipped
+  rule: 80% detection, 3.0% false alarms (target-only detector 98.1% false
+  alarms). These replace the earlier argmax figures above (99.2%, 3.2%).
+- `scripts/train_frame_detector.py` trains once on all 2,000 clips and checks
+  the exported model against scikit-learn's predictions before saving
+  `models/frame_detector.npz` (36 KB) with a model card in `models/README.md`.
+  Training frames: clicking 713, typing 391, banging 196, alarms 367, other
+  18,000; the few knocking frames explain its weaker knocking result.
+- App: sidebar switch, a caption in trained mode, and the licence noted in the
+  help text. Architecture diagram, design notes, requirements and
+  traceability updated.
+- Tests: 8 detector unit tests (test-first), 5 new system tests with a
+  stand-in detector, and 1 real-model system test. System tests now find radio
+  buttons by label, since the sidebar added a second radio.
+- Mutation check: making the app ignore the switch was caught.
+
+**Limits**
+- The detector has not heard talking or music, so labels stay the default.
+- Using it puts a model derived from ESC-50 (non-commercial) in the product.
+
+**AI assistance**: Claude built and tested the detector mode at my request.
