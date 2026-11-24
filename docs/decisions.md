@@ -173,3 +173,22 @@ Route 1 remains the fallback for anyone without Premium.
 **Consequences for the business analysis.** Relying on Spotify ties the
 product to another company's API terms and quota policy, which is a
 dependency risk.
+
+**Update (2026-11-24): evidence for and against D3.** A second evaluation
+measured the app's own task on ESC-50 (`evaluation.md`, "The app's own
+task"):
+
+- *Closed set* was **confirmed**: a frame detector trained only on the target
+  sounds fired on 99.2% of non-target clips.
+- *Clip versus frame* was **resolved**: a detector trained on frames, with an
+  "other" class, found 80% of target clips against 56% for the shipped labels,
+  with fewer false alarms (3.2% vs 4.7%).
+- Still standing: that detector has never heard talking or music, the
+  commonest room sounds; ESC-50 has no chewing or speech, so labels would still
+  be needed for those; its output is harder to explain; and it would put a
+  model trained on non-commercial data into the product.
+
+The case for keeping labels is therefore weaker than first argued. The
+decision is under review (my call): keep labels and present the trained
+detector as validated future work, or add it as an optional mode for the four
+categories it covers.

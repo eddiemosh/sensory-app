@@ -434,3 +434,38 @@ to be recorded here when done.
   lives in the project's git-ignored `tfhub_cache/` folder. All 92 tests pass.
 
 **AI assistance**: Claude wrote the script, found and fixed the cache problem.
+
+---
+
+## 2026-11-24: Evaluating the app's own task
+
+**Why**
+- A critical review of the ML investigation found two weaknesses: the app's
+  decisions had never been evaluated, only clip classification on a closed
+  set, and decision D3 rested on arguments that had not been measured.
+
+**Done**
+- `scripts/evaluate_app_task.py` scores detection of five ESC-50 target
+  classes among all 50 with the app's frame rule, for four arms: labels with
+  default thresholds, labels with thresholds tuned on four folds, a frame
+  detector trained on targets only, and one with an added "other" class.
+- Helpers in `evaluation.py` written test-first (`tests/test_app_task.py`,
+  6 tests), including one that checks the evaluation's rule against the app's
+  `decide()`. The script repeats that check on all 2,000 clips; all agree.
+- Results in `evaluation.md` and `app-task-results.json`; D3 updated.
+
+**Results**
+- Shipped app: 56% of targets detected, 4.7% false alarms; clicking 20%.
+- Target-only detector: 99.2% false alarms (confirms the closed-set concern).
+- Detector with "other" class: 80% detected, 3.2% false alarms; clicking 88%,
+  knocking 45%.
+- Tuned label thresholds (score 0.1, 2 frames in every fold): 83% detected
+  but 13.5% false alarms, and 2 frames breaks the one-off-sound rule, so the
+  defaults stay.
+
+**Open decision**
+- Whether to add the trained detector to the app or present it as validated
+  future work. Its "other" class has never heard talking or music.
+
+**AI assistance**: Claude proposed the evaluation after I asked for a
+critical review, wrote and ran it, and wrote up the results.

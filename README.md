@@ -61,6 +61,17 @@ It compares YAMNet's mapped labels with a classifier trained on YAMNet
 embeddings, using ESC-50's five folds, and writes
 `docs/evaluation/results.json`. The write-up is in `docs/evaluation.md`.
 
+```bash
+python scripts/evaluate_app_task.py
+```
+
+It evaluates the app's own task: detecting five target sounds among all 50
+classes with the app's frame rule, for YAMNet labels and for trained frame
+detectors. It writes `docs/evaluation/app-task-results.json`.
+
+To test the app on your own recordings, put them in `data/recordings/` and run
+`python scripts/analyse_recordings.py`.
+
 ## Documentation
 
 - `docs/requirements.md`: user stories and numbered requirements

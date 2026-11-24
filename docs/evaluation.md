@@ -114,3 +114,86 @@ weak, and a trained head is future work.
   wheels running on tracks". This evaluation maps it to *train*, while the app
   puts it under *clicking*. Both are defensible; the mapping here was fixed
   before the run and left unchanged.
+
+---
+
+# The app's own task: detection among everything else (2026-11-24)
+
+The comparison above measures classification of whole clips from a closed set
+of 50. The app's task is different: it scores single frames, applies the rule
+(a category triggers when it passes in at least 4 frames), and must stay quiet
+for everything it does not care about. This second evaluation measures that
+task. Raw numbers: [`evaluation/app-task-results.json`](evaluation/app-task-results.json).
+Reproduce with `python scripts/evaluate_app_task.py`.
+
+## Set-up
+
+- **Targets:** five ESC-50 classes mapped to app categories: mouse_click and
+  clock_tick → clicking, keyboard_typing → typing, door_wood_knock → banging,
+  clock_alarm → alarms (200 clips). The other 45 classes (1,800 clips) should
+  trigger nothing.
+- **Scores:** *detection rate* = share of target clips where the right
+  category triggered (averaged over the four categories); *false alarm rate* =
+  share of the 1,800 other clips where any category triggered.
+- **Folds:** ESC-50's five folds; each arm is trained or tuned on four and
+  tested on the fifth.
+- **Check:** the evaluation's vectorised rule was compared with the app's
+  `decide()` on all 2,000 clips and agreed on every one.
+- **Not covered:** chewing and loud speech have no ESC-50 class. Chewing's
+  false alarms are still counted.
+
+| Arm | What it is |
+| --- | --- |
+| A, default | YAMNet labels with the app's thresholds (score 0.2, 4 frames): the app as shipped |
+| A, tuned | YAMNet labels with thresholds chosen on four folds by detection minus false alarms, tested on the fifth |
+| B-closed | Frame-level logistic regression on YAMNet embeddings, trained on target sounds only, so every frame is forced into a target category |
+| B-open | The same with a fifth "other" class trained on frames from the 45 other classes |
+
+For B, each training frame takes its clip's label, except quiet frames of a
+target clip (more than 20 dB below its loudest frame), which are left out so
+silent padding is not taught as the sound. Classifier settings (C = 0.1,
+balanced class weights) were fixed in advance; B uses the same 4-frame rule
+as A, untuned.
+
+## Results
+
+| Arm | Detection rate (± fold std) | False alarm rate (± fold std) |
+| --- | --- | --- |
+| A, default (as shipped) | 0.56 ± 0.06 | 0.047 ± 0.006 |
+| A, tuned | 0.83 ± 0.04 | 0.135 ± 0.024 |
+| B-closed | 0.95 ± 0.03 | **0.992** ± 0.005 |
+| B-open | **0.80** ± 0.06 | **0.032** ± 0.010 |
+
+Detection by category:
+
+| Arm | Clicking | Typing | Banging | Alarms |
+| --- | --- | --- | --- | --- |
+| A, default | 0.20 | 0.95 | 0.23 | 0.88 |
+| A, tuned | 0.64 | 0.97 | 0.78 | 0.95 |
+| B-closed | 0.89 | 0.97 | 0.97 | 0.97 |
+| B-open | 0.88 | 0.93 | 0.45 | 0.95 |
+
+## What this shows
+
+- **The app as shipped is cautious.** It rarely raises a false alarm (4.7%)
+  but misses most clicks (20% found) and knocks (23%).
+- **The closed-set concern in D3 was right.** A detector that only knows the
+  target sounds fires on 99% of everything else.
+- **An "other" class fixes it.** B-open finds 80% of targets, against 56% for
+  the shipped app, with a slightly lower false-alarm rate (3.2% vs 4.7%).
+  Clicking rises from 20% to 88%. Its weak spot is knocking (45%).
+- **Tuning the label thresholds is not a free win.** Every fold chose score
+  0.1 and just 2 frames, which raises detection to 83% but triples false
+  alarms (13.5%). Two frames is also about one short sound, which breaks the
+  rule that a one-off sound is ignored (US3): the tuning objective rewards
+  catching ESC-50's short clips, not recurrence. The defaults were kept.
+
+## Limits of this evaluation
+
+- B-open's "other" class has heard only ESC-50's 45 other classes. It has
+  never heard ordinary talking or music, the most common sounds in a real
+  room, so its false-alarm rate there is unknown. YAMNet's labels do include
+  speech and music.
+- ESC-50 clips are 5 seconds and often hold one or two events, which favours
+  low frame counts; real recordings are longer.
+- Chewing and loud speech are not scored for detection.

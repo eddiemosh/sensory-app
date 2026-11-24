@@ -133,6 +133,73 @@ APP_RELEVANT = (
 )
 
 
+# The app's detection task on ESC-50: these classes should trigger the named app
+# category; the other 45 classes should trigger nothing. Chewing and speech have
+# no ESC-50 class, so they cannot be scored for detection here.
+APP_TARGETS = {
+    "mouse_click": "clicking",
+    "clock_tick": "clicking",
+    "keyboard_typing": "typing",
+    "door_wood_knock": "banging",
+    "clock_alarm": "alarms",
+}
+TRAINING_QUIET_DB = 20.0  # target-clip frames this far below the loudest are dropped
+
+
+def category_frame_scores(scores, class_names, categories) -> np.ndarray:
+    """Per frame, each category's score = its best known label's score (frames x categories)."""
+    index = {name: i for i, name in enumerate(class_names)}
+    columns = []
+    for category in categories:
+        known = [index[label] for label in category.labels if label in index]
+        columns.append(scores[:, known].max(axis=1) if known else np.zeros(len(scores)))
+    return np.stack(columns, axis=1)
+
+
+def triggered_categories(frame_scores, threshold: float, min_frames: int) -> np.ndarray:
+    """The app's rule: a category triggers when it reaches the threshold in enough frames."""
+    return (frame_scores >= threshold).sum(axis=0) >= min_frames
+
+
+def detection_summary(triggered, expected, category_names) -> dict:
+    """Score clip-level detection. `expected` = category index per clip, -1 for none."""
+    target = expected >= 0
+    other = ~target
+    rates = {}
+    for i, name in enumerate(category_names):
+        clips = expected == i
+        if clips.any():
+            rates[name] = float(triggered[clips, i].mean())
+    hit = triggered[target, expected[target]]
+    others_fired = triggered[target].copy()
+    others_fired[np.arange(target.sum()), expected[target]] = False
+    return {
+        "detection_rate": rates,
+        "mean_detection_rate": float(np.mean(list(rates.values()))),
+        "overall_detection_rate": float(hit.mean()),
+        "false_alarm_rate": float(triggered[other].any(axis=1).mean()),
+        "false_alarms_by_category": {
+            name: int(triggered[other, i].sum()) for i, name in enumerate(category_names)
+        },
+        "wrong_category_rate": float(others_fired.any(axis=1).mean()),
+        "target_clips": int(target.sum()),
+        "other_clips": int(other.sum()),
+    }
+
+
+def frame_training_labels(levels, category, other: int, quiet_db=TRAINING_QUIET_DB):
+    """Frame labels for training a detector from clip labels.
+
+    A target clip's sound is in its loud frames; its quiet frames (often padding)
+    are dropped (-1) rather than mislabelled. Every frame of a non-target clip is
+    "other".
+    """
+    if category is None:
+        return np.full(len(levels), other)
+    loud = (levels >= levels.max() - quiet_db) & (levels > -100.0)
+    return np.where(loud, category, -1)
+
+
 @dataclass(frozen=True)
 class Clip:
     filename: str
