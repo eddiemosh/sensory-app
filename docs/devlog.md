@@ -506,3 +506,27 @@ critical review, wrote and ran it, and wrote up the results.
 - Using it puts a model derived from ESC-50 (non-commercial) in the product.
 
 **AI assistance**: Claude built and tested the detector mode at my request.
+
+---
+
+## 2026-11-24: Report draft updated for the new evaluation and detector
+
+**Done**
+- At my request, Claude updated the AI-written report draft
+  (https://claude.ai/artifact/KDqYbenrfGD1kd4DAUiNog): the central finding
+  (section 1); section 3 rewritten as two experiments (clip classification,
+  then the app's own task) and the decision to add the detector; FR13, the
+  detector module and trained-mode rule in section 4; the processing steps and
+  the model-cache problem in section 5; 112 tests, eight caught faults and the
+  new limits in section 6; future work in section 7; and the AI declaration.
+- Fixed a contradiction in section 2: ESC-50 is now in the product through the
+  optional detector, so the product is non-commercial while that mode ships.
+
+**Still open in the draft**
+- About 3,250 to 3,350 words by estimate, close to the 3,300 limit;
+  sections 3 to 6 run over their budgets. Count it properly in Word.
+- The [verify] references and [add] items (real recordings, figures,
+  screenshot, transcript) are unchanged.
+
+**AI assistance**: Claude edited the draft. It still needs rewriting in my
+own words.
