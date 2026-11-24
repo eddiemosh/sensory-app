@@ -14,6 +14,7 @@ success criteria.
 | US4 | As a user, I want a suitable audio recommendation when a distracting sound recurs. |
 | US5 | As a user, I want to know why a recommendation was or was not made so that I can trust and tune it. |
 | US6 | As a user, I want loud speech near me to count as a distraction, but not ordinary background talk, because talk is everywhere and hard to mask. |
+| US7 | As a user, I want the option of a detector trained for the sounds this app cares about, so that sounds such as mouse clicks are found more reliably. |
 
 ## Functional requirements
 
@@ -31,8 +32,10 @@ success criteria.
 | FR10 | Every decision shall include a plain-language explanation and per-category evidence. | US5, SC5 |
 | FR11 | Configured labels that YAMNet does not have shall be reported and ignored, not cause a failure. | SC4 |
 | FR12 | A category may set its own score threshold and a minimum loudness per frame. The speech category shall count only frames that are both confidently speech (default score 0.6) and loud (default -20 dBFS). | US6 |
+| FR13 | The user shall be able to switch clicking, typing, banging and alarms to a detector trained on YAMNet embeddings, which counts a frame at probability 0.5 or more; chewing and loud speech shall keep YAMNet's labels. YAMNet labels remain the default. | US7 |
 
 US6 and FR12 were added on 2026-11-16, after the first build (decision D4).
+US7 and FR13 were added on 2026-11-24 after the app-task evaluation (decision D3).
 
 ## Non-functional requirements
 

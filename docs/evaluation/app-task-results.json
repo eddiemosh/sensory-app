@@ -1,0 +1,139 @@
+{
+  "task": "detect 5 ESC-50 target classes (mapped to app categories) among all 50; a category triggers when it passes in at least the minimum frames",
+  "targets": {
+    "mouse_click": "clicking",
+    "clock_tick": "clicking",
+    "keyboard_typing": "typing",
+    "door_wood_knock": "banging",
+    "clock_alarm": "alarms"
+  },
+  "categories_scored": [
+    "clicking",
+    "typing",
+    "chewing",
+    "banging",
+    "alarms"
+  ],
+  "frames": 20000,
+  "training_quiet_db": 20.0,
+  "arms": {
+    "A labels, default thresholds": {
+      "detection_rate": {
+        "clicking": 0.2,
+        "typing": 0.95,
+        "banging": 0.225,
+        "alarms": 0.875
+      },
+      "mean_detection_rate": 0.5625,
+      "overall_detection_rate": 0.49,
+      "false_alarm_rate": 0.04722222222222222,
+      "false_alarms_by_category": {
+        "clicking": 26,
+        "typing": 2,
+        "chewing": 5,
+        "banging": 3,
+        "alarms": 49
+      },
+      "wrong_category_rate": 0.075,
+      "target_clips": 200,
+      "other_clips": 1800,
+      "mean_detection_rate_fold_std": 0.060110575192722955,
+      "false_alarm_rate_fold_std": 0.006334307917217433,
+      "wrong_category_rate_fold_std": 0.0316227766016838
+    },
+    "A labels, tuned thresholds": {
+      "detection_rate": {
+        "clicking": 0.6375,
+        "typing": 0.975,
+        "banging": 0.775,
+        "alarms": 0.95
+      },
+      "mean_detection_rate": 0.8343749999999999,
+      "overall_detection_rate": 0.795,
+      "false_alarm_rate": 0.135,
+      "false_alarms_by_category": {
+        "clicking": 65,
+        "typing": 15,
+        "chewing": 43,
+        "banging": 38,
+        "alarms": 93
+      },
+      "wrong_category_rate": 0.24,
+      "target_clips": 200,
+      "other_clips": 1800,
+      "mean_detection_rate_fold_std": 0.03775951866748304,
+      "false_alarm_rate_fold_std": 0.024126723056231626,
+      "wrong_category_rate_fold_std": 0.11467344941179715,
+      "chosen_per_test_fold": {
+        "1": {
+          "min_score": 0.1,
+          "min_frames": 2
+        },
+        "2": {
+          "min_score": 0.1,
+          "min_frames": 2
+        },
+        "3": {
+          "min_score": 0.1,
+          "min_frames": 2
+        },
+        "4": {
+          "min_score": 0.1,
+          "min_frames": 2
+        },
+        "5": {
+          "min_score": 0.05,
+          "min_frames": 2
+        }
+      }
+    },
+    "B-closed trained, targets only": {
+      "detection_rate": {
+        "clicking": 0.8875,
+        "typing": 0.975,
+        "banging": 0.975,
+        "alarms": 0.975
+      },
+      "mean_detection_rate": 0.953125,
+      "overall_detection_rate": 0.94,
+      "false_alarm_rate": 0.9805555555555555,
+      "false_alarms_by_category": {
+        "clicking": 818,
+        "typing": 276,
+        "chewing": 0,
+        "banging": 744,
+        "alarms": 256
+      },
+      "wrong_category_rate": 0.16,
+      "target_clips": 200,
+      "other_clips": 1800,
+      "mean_detection_rate_fold_std": 0.02614562582918986,
+      "false_alarm_rate_fold_std": 0.008606629658238718,
+      "wrong_category_rate_fold_std": 0.025495097567963927
+    },
+    "B-open trained, targets + other": {
+      "detection_rate": {
+        "clicking": 0.875,
+        "typing": 0.925,
+        "banging": 0.45,
+        "alarms": 0.95
+      },
+      "mean_detection_rate": 0.8,
+      "overall_detection_rate": 0.815,
+      "false_alarm_rate": 0.03,
+      "false_alarms_by_category": {
+        "clicking": 29,
+        "typing": 10,
+        "chewing": 0,
+        "banging": 14,
+        "alarms": 1
+      },
+      "wrong_category_rate": 0.06,
+      "target_clips": 200,
+      "other_clips": 1800,
+      "mean_detection_rate_fold_std": 0.06358434359179939,
+      "false_alarm_rate_fold_std": 0.008314794192830979,
+      "wrong_category_rate_fold_std": 0.030000000000000002
+    }
+  }
+}

@@ -16,6 +16,8 @@ from typing import Callable, Mapping, Sequence
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
 
+from sensoryaware.detector import frame_training_labels  # noqa: F401  (shared with the app)
+
 # Hand-written mapping from each ESC-50 class to the YAMNet labels that
 # describe it. No label is used for two classes, so a clip's prediction is never
 # a tie decided by list order. Weak or indirect mappings are marked; they are a
@@ -131,6 +133,59 @@ APP_RELEVANT = (
     "door_wood_knock",
     "clock_alarm",
 )
+
+
+# The app's detection task on ESC-50: these classes should trigger the named app
+# category; the other 45 classes should trigger nothing. Chewing and speech have
+# no ESC-50 class, so they cannot be scored for detection here.
+APP_TARGETS = {
+    "mouse_click": "clicking",
+    "clock_tick": "clicking",
+    "keyboard_typing": "typing",
+    "door_wood_knock": "banging",
+    "clock_alarm": "alarms",
+}
+
+
+def category_frame_scores(scores, class_names, categories) -> np.ndarray:
+    """Per frame, each category's score = its best known label's score (frames x categories)."""
+    index = {name: i for i, name in enumerate(class_names)}
+    columns = []
+    for category in categories:
+        known = [index[label] for label in category.labels if label in index]
+        columns.append(scores[:, known].max(axis=1) if known else np.zeros(len(scores)))
+    return np.stack(columns, axis=1)
+
+
+def triggered_categories(frame_scores, threshold: float, min_frames: int) -> np.ndarray:
+    """The app's rule: a category triggers when it reaches the threshold in enough frames."""
+    return (frame_scores >= threshold).sum(axis=0) >= min_frames
+
+
+def detection_summary(triggered, expected, category_names) -> dict:
+    """Score clip-level detection. `expected` = category index per clip, -1 for none."""
+    target = expected >= 0
+    other = ~target
+    rates = {}
+    for i, name in enumerate(category_names):
+        clips = expected == i
+        if clips.any():
+            rates[name] = float(triggered[clips, i].mean())
+    hit = triggered[target, expected[target]]
+    others_fired = triggered[target].copy()
+    others_fired[np.arange(target.sum()), expected[target]] = False
+    return {
+        "detection_rate": rates,
+        "mean_detection_rate": float(np.mean(list(rates.values()))),
+        "overall_detection_rate": float(hit.mean()),
+        "false_alarm_rate": float(triggered[other].any(axis=1).mean()),
+        "false_alarms_by_category": {
+            name: int(triggered[other, i].sum()) for i, name in enumerate(category_names)
+        },
+        "wrong_category_rate": float(others_fired.any(axis=1).mean()),
+        "target_clips": int(target.sum()),
+        "other_clips": int(other.sum()),
+    }
 
 
 @dataclass(frozen=True)

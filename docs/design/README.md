@@ -20,6 +20,7 @@ module. Data flows left to right and the decision comes back to the interface.
 | `predictions.py` | Hold the frames × labels score table; rank the top labels | NumPy | FR4 |
 | `decision.py` | Apply the rules; produce intervention, explanation, evidence | NumPy only | FR6–FR12, NFR2, NFR5 |
 | `config.py` | Default categories, labels, interventions and thresholds | `decision.py` | FR5 |
+| `detector.py` | Optional trained frame detector: loads `models/frame_detector.npz`, adds its probabilities to the frame scores, switches four categories to them | NumPy (scikit-learn only to train) | FR13 |
 | `evaluation.py` | Offline ESC-50 comparison (not used by the app) | scikit-learn | ML investigation |
 
 ### Design principles
@@ -70,6 +71,16 @@ least 0.6 *and* the frame is at least -20 dBFS loud. Loudness is the RMS
 level of the same 0.96 s window YAMNet scored, measured relative to the
 loudest value a recording can hold, so it depends on the microphone's gain;
 the sidebar lets the user adjust it (decision D4).
+
+**Trained detector mode (FR13, decision D3).** The sidebar's "Detection
+method" switches clicking, typing, banging and alarms to a detector trained
+on YAMNet embeddings. Its per-frame probabilities are added to the score
+table under labels such as `Trained detector: clicking`, and those four
+categories use those labels with a threshold of 0.5. The rule engine is
+unchanged: it sees more columns, not a different algorithm. Chewing and loud
+speech keep YAMNet's labels, and the top-five table always shows YAMNet's.
+The detector file is a plain NumPy archive (no pickled code) and is checked
+against scikit-learn's own predictions when it is written.
 
 Labels that YAMNet does not have are reported as warnings and ignored (FR11).
 The defaults are provisional; see the evaluation's limitations.

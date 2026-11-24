@@ -61,6 +61,21 @@ It compares YAMNet's mapped labels with a classifier trained on YAMNet
 embeddings, using ESC-50's five folds, and writes
 `docs/evaluation/results.json`. The write-up is in `docs/evaluation.md`.
 
+```bash
+python scripts/evaluate_app_task.py
+```
+
+It evaluates the app's own task: detecting five target sounds among all 50
+classes with the app's frame rule, for YAMNet labels and for trained frame
+detectors. It writes `docs/evaluation/app-task-results.json`.
+
+To rebuild the optional trained detector shipped in `models/` (see
+`models/README.md`), run `python scripts/train_frame_detector.py` after the
+evaluation above.
+
+To test the app on your own recordings, put them in `data/recordings/` and run
+`python scripts/analyse_recordings.py`.
+
 ## Documentation
 
 - `docs/requirements.md`: user stories and numbered requirements
@@ -100,5 +115,7 @@ with the real model.
 
 ## Licence note
 
-ESC-50 is believed to be non-commercial. Fine for coursework; check before any
-commercial use is discussed in the business analysis.
+ESC-50 (Piczak, 2015) is licensed CC BY-NC 3.0, non-commercial use only. The
+optional trained detector in `models/` is derived from it, so while it ships
+the app is for non-commercial use. The default YAMNet-label mode does not use
+ESC-50 at run time.

@@ -368,3 +368,165 @@ and researched Spotify's API terms.
 (Premium, 5 allow-listed users, no wider release without meeting the
 extended-quota criteria). D5 now records automatic playback as the chosen
 future route, with playlist links as the fallback. Nothing is built yet.
+
+---
+
+## 2026-11-16: Pull requests merged and branches tidied
+
+**Done**
+- Raised the five stacked feature branches as pull requests #1 to #5 and
+  merged them into `main` in order, each with a merge commit after its CI run
+  passed.
+- Deleted the merged branches and `repo-setup`, and switched the GitHub
+  default branch from `repo-setup` to `main`.
+- Kept `feature/poc`: it holds one dev-container commit not in `main`, and the
+  hosted app may still deploy from it.
+
+**AI assistance**: Claude raised and merged the pull requests in the browser
+and cleaned up the branches at my request.
+
+---
+
+## 2026-11-23: Full report draft written by AI
+
+**Done**
+- At my request, Claude wrote a complete first draft of the report, all eight
+  sections plus a draft AI declaration, as a Claude Docs document:
+  https://claude.ai/artifact/KDqYbenrfGD1kd4DAUiNog
+- The draft uses figures from this repository (evaluation results, test
+  counts, decisions D1 to D5) and the sources in `business-research.md`.
+- About 3,100 to 3,200 words across sections 1 to 7 by estimate; section 2 is
+  about 70 words over its budget.
+
+**Decisions**
+- My plan said the report's analysis and conclusions should be my own work,
+  with AI limited to planning, structure and code. I chose to have AI draft
+  every section anyway, as a starting point to rewrite. This must be stated in
+  the AI declaration, and the draft rewritten in my own words before
+  submission.
+
+**Still to do in the draft**
+- Items marked [verify]: several reference details (Venetjoki et al., Gong et
+  al., Poulsen et al., Roelofsen, ICO guidance status, Access to Work).
+- Items marked [add]: real-recording results, two figures, a results
+  screenshot, the transcript reference, the final commit count.
+
+**AI assistance**: Claude wrote the whole draft. My own rewrite and checks are
+to be recorded here when done.
+
+---
+
+## 2026-11-23: Real-recording test set up, and a model-cache fix
+
+**Done**
+- `scripts/analyse_recordings.py` runs the app's full pipeline, with default
+  settings, on a folder of my own recordings (`data/recordings/`, git-ignored)
+  and writes a results table to `docs/evaluation/real-recordings.md`: the
+  recommendation, the top YAMNet labels, frames detected per category, and the
+  loudness of confident-speech frames, to judge the -20 dBFS default.
+- Checked it on synthetic clips: 10 s of repeated beeps gave stronger masking
+  (Alarms and beeps in 20 of 20 frames), and silence gave nothing.
+
+**Problem found**
+- YAMNet would not load: Windows had part-cleaned TensorFlow Hub's cache in
+  the system temp folder, and the loader fails on a broken cache instead of
+  downloading again. The app would have failed the same way. The cache now
+  lives in the project's git-ignored `tfhub_cache/` folder. All 92 tests pass.
+
+**AI assistance**: Claude wrote the script, found and fixed the cache problem.
+
+---
+
+## 2026-11-24: Evaluating the app's own task
+
+**Why**
+- A critical review of the ML investigation found two weaknesses: the app's
+  decisions had never been evaluated, only clip classification on a closed
+  set, and decision D3 rested on arguments that had not been measured.
+
+**Done**
+- `scripts/evaluate_app_task.py` scores detection of five ESC-50 target
+  classes among all 50 with the app's frame rule, for four arms: labels with
+  default thresholds, labels with thresholds tuned on four folds, a frame
+  detector trained on targets only, and one with an added "other" class.
+- Helpers in `evaluation.py` written test-first (`tests/test_app_task.py`,
+  6 tests), including one that checks the evaluation's rule against the app's
+  `decide()`. The script repeats that check on all 2,000 clips; all agree.
+- Results in `evaluation.md` and `app-task-results.json`; D3 updated.
+
+**Results**
+- Shipped app: 56% of targets detected, 4.7% false alarms; clicking 20%.
+- Target-only detector: 99.2% false alarms (confirms the closed-set concern).
+- Detector with "other" class: 80% detected, 3.2% false alarms; clicking 88%,
+  knocking 45%.
+- Tuned label thresholds (score 0.1, 2 frames in every fold): 83% detected
+  but 13.5% false alarms, and 2 frames breaks the one-off-sound rule, so the
+  defaults stay.
+
+**Open decision**
+- Whether to add the trained detector to the app or present it as validated
+  future work. Its "other" class has never heard talking or music.
+
+**AI assistance**: Claude proposed the evaluation after I asked for a
+critical review, wrote and ran it, and wrote up the results.
+
+---
+
+## 2026-11-24: Trained detector added as an optional mode
+
+**Decision (mine)**
+- After the app-task evaluation, I chose to add the trained detector to the
+  app as an optional "Detection method", keeping YAMNet labels as the default
+  (D3 resolved, new requirement FR13, user story US7).
+
+**Done**
+- `src/sensoryaware/detector.py`: shared training code, a NumPy-only
+  `FrameDetector` saved as a plain `.npz` (no pickled code), and the glue that
+  adds its probabilities to the frame scores and switches clicking, typing,
+  banging and alarms to them (threshold 0.5). Chewing and loud speech keep
+  YAMNet's labels; the top-five table stays YAMNet's.
+- The evaluation now uses this exact code and rule. Re-run under the shipped
+  rule: 80% detection, 3.0% false alarms (target-only detector 98.1% false
+  alarms). These replace the earlier argmax figures above (99.2%, 3.2%).
+- `scripts/train_frame_detector.py` trains once on all 2,000 clips and checks
+  the exported model against scikit-learn's predictions before saving
+  `models/frame_detector.npz` (36 KB) with a model card in `models/README.md`.
+  Training frames: clicking 713, typing 391, banging 196, alarms 367, other
+  18,000; the few knocking frames explain its weaker knocking result.
+- App: sidebar switch, a caption in trained mode, and the licence noted in the
+  help text. Architecture diagram, design notes, requirements and
+  traceability updated.
+- Tests: 8 detector unit tests (test-first), 5 new system tests with a
+  stand-in detector, and 1 real-model system test. System tests now find radio
+  buttons by label, since the sidebar added a second radio.
+- Mutation check: making the app ignore the switch was caught.
+
+**Limits**
+- The detector has not heard talking or music, so labels stay the default.
+- Using it puts a model derived from ESC-50 (non-commercial) in the product.
+
+**AI assistance**: Claude built and tested the detector mode at my request.
+
+---
+
+## 2026-11-24: Report draft updated for the new evaluation and detector
+
+**Done**
+- At my request, Claude updated the AI-written report draft
+  (https://claude.ai/artifact/KDqYbenrfGD1kd4DAUiNog): the central finding
+  (section 1); section 3 rewritten as two experiments (clip classification,
+  then the app's own task) and the decision to add the detector; FR13, the
+  detector module and trained-mode rule in section 4; the processing steps and
+  the model-cache problem in section 5; 112 tests, eight caught faults and the
+  new limits in section 6; future work in section 7; and the AI declaration.
+- Fixed a contradiction in section 2: ESC-50 is now in the product through the
+  optional detector, so the product is non-commercial while that mode ships.
+
+**Still open in the draft**
+- About 3,250 to 3,350 words by estimate, close to the 3,300 limit;
+  sections 3 to 6 run over their budgets. Count it properly in Word.
+- The [verify] references and [add] items (real recordings, figures,
+  screenshot, transcript) are unchanged.
+
+**AI assistance**: Claude edited the draft. It still needs rewriting in my
+own words.

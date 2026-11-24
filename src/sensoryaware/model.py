@@ -6,12 +6,17 @@ its tests, can run without loading it.
 
 import csv
 import os
+from pathlib import Path
 
 import numpy as np
 
 from sensoryaware.predictions import FramePredictions
 
 YAMNET_URL = "https://tfhub.dev/google/yamnet/1"
+# TensorFlow Hub caches in the system temp folder by default, which Windows
+# cleans out; a part-deleted cache then fails to load instead of re-downloading.
+# The project folder keeps it (git-ignored).
+CACHE_DIR = Path(__file__).resolve().parents[2] / "tfhub_cache"
 
 
 class YamnetClassifier:
@@ -19,6 +24,7 @@ class YamnetClassifier:
 
     def __init__(self):
         os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+        os.environ.setdefault("TFHUB_CACHE_DIR", str(CACHE_DIR))
         import tensorflow as tf
         import tensorflow_hub as hub
 

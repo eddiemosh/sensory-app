@@ -30,6 +30,7 @@ day.
 | FR10 | Plain-language explanation and per-category evidence | `test_decision`: `test_explanation_gives_evidence_for_a_trigger`, `test_evidence_covers_every_category_with_peak_score` | `test_explanation_is_shown_with_the_decision`, `test_uploaded_recurring_typing_gets_gentle_instrumental` (evidence table) | Covered |
 | FR11 | Unknown labels reported and ignored, not a failure | `test_decision`: `test_unknown_label_is_reported_and_ignored`, `test_category_with_only_unknown_labels_does_not_trigger`; `test_model_integration`: `test_every_default_label_exists_in_yamnet`† | `test_label_missing_from_the_model_is_shown_as_a_warning` | Covered |
 | FR12 | Per-category score threshold and minimum loudness; loud speech only | `test_decision`: `test_category_threshold_overrides_the_global_one`, `test_loud_speech_triggers_its_intervention`, `test_quiet_speech_is_ignored`, `test_only_frames_that_are_both_confident_and_loud_count`, `test_gated_category_without_levels_is_skipped_with_a_warning`, `test_explanation_states_the_category_rule_including_loudness`; `test_audio`: `test_full_scale_sine_is_about_minus_3_dbfs`, `test_silence_has_the_floor_level`, `test_levels_follow_yamnet_frame_timing`, `test_frames_past_the_end_get_the_floor_level`; `test_predictions`: `test_levels_must_match_the_number_of_frames` | `test_loud_speech_gets_stronger_masking`, `test_quiet_speech_is_ignored`, `test_background_speech_below_the_speech_threshold_is_ignored` | Covered with a stand-in model; see note 4 |
+| FR13 | Optional trained detector for four categories; labels stay default | `test_detector`: `test_exported_detector_matches_scikit_learn`, `test_save_and_load_round_trip`, `test_detector_scores_are_added_as_named_columns_in_category_order`, `test_trained_mode_swaps_only_the_four_detector_categories`, `test_rule_engine_triggers_on_confident_detector_frames`, `test_training_frames_drop_quiet_target_frames_and_skip_other_when_closed`, `test_shipped_detector_file_is_valid`; `test_app_task`: all six | `test_labels_are_the_default_detection_method`, `test_trained_detector_drives_its_categories`, `test_trained_mode_ignores_yamnet_labels_for_its_categories`, `test_trained_mode_keeps_yamnet_labels_for_chewing`, `test_top_sounds_table_lists_only_yamnet_labels`, `test_trained_detector_mode_runs_with_the_real_models`† | Covered; accuracy in `evaluation.md`; see note 5 |
 
 ## Non-functional requirements
 
@@ -60,6 +61,10 @@ day.
    YAMNet. The 0.6 score and -20 dBFS defaults are unmeasured. Recording a
    normal and a loud conversation, then checking the app's evidence table,
    would test both.
+5. **FR13 accuracy.** Tests check that the detector is exported, loaded and
+   used correctly. Its accuracy is measured separately by the app-task
+   evaluation (80% detection, 3.0% false alarms on ESC-50). It has not been
+   tested on talking or music.
 
 ## Supporting tests not tied to one requirement
 

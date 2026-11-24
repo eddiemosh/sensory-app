@@ -18,8 +18,10 @@ import soundfile as sf
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
+import sensoryaware.detector
 import sensoryaware.model
 from sensoryaware.config import DEFAULT_CONFIG
+from sensoryaware.detector import DETECTOR_CATEGORIES, OTHER
 from sensoryaware.predictions import FramePredictions
 
 APP = str(Path(__file__).resolve().parent.parent / "app.py")
@@ -55,12 +57,37 @@ class FakeClassifier:
             scores[frames, CLASS_NAMES.index(label)] = 0.9
         return FramePredictions(CLASS_NAMES, scores)
 
+    def analyse(self, waveform):
+        return self.classify(waveform), np.zeros((NUM_FRAMES, 1024), dtype=np.float32)
+
+
+class FakeDetector:
+    """Stands in for the trained detector. Each category scores 0.9 in the given frames."""
+
+    classes = DETECTOR_CATEGORIES + (OTHER,)
+    frames_by_category: dict[str, list[int]] = {}
+
+    @classmethod
+    def load(cls, path=None):
+        return cls()
+
+    def probabilities(self, embeddings):
+        probs = np.zeros((len(embeddings), len(self.classes)))
+        probs[:, -1] = 1.0
+        for category, frames in FakeDetector.frames_by_category.items():
+            probs[frames, :] = 0.0
+            probs[frames, self.classes.index(category)] = 0.9
+            probs[frames, -1] = 0.1
+        return probs
+
 
 @pytest.fixture
 def app(monkeypatch):
     monkeypatch.setattr(sensoryaware.model, "YamnetClassifier", FakeClassifier)
+    monkeypatch.setattr(sensoryaware.detector, "FrameDetector", FakeDetector)
     FakeClassifier.frames_by_label = {}
     FakeClassifier.calls = 0
+    FakeDetector.frames_by_category = {}
     st.cache_resource.clear()
     at = AppTest.from_file(APP, default_timeout=30)
     at.run()
@@ -75,6 +102,15 @@ def consent(at):
 
 def upload(at, data=None, name="clip.wav"):
     at.file_uploader[0].upload(name, data or wav_bytes(), "audio/wav").run()
+    return at
+
+
+def radio(at, label):
+    return next(r for r in at.radio if r.label == label)
+
+
+def use_trained_detector(at):
+    radio(at, "Detection method").set_value("Trained detector (experimental)").run()
     return at
 
 
@@ -102,18 +138,18 @@ def test_no_audio_input_is_offered_before_consent(app):
     assert not app.checkbox[0].value
     assert len(app.file_uploader) == 0
     assert len(app.audio_input) == 0
-    assert len(app.radio) == 0
+    assert not [r for r in app.radio if r.label == "Audio source"]
 
 
 def test_consent_reveals_upload_by_default(app):
     consent(app)
-    assert app.radio[0].value == "Upload a file"
+    assert radio(app, "Audio source").value == "Upload a file"
     assert len(app.file_uploader) == 1
 
 
 def test_microphone_option_reveals_recorder(app):
     consent(app)
-    app.radio[0].set_value("Record with microphone").run()
+    radio(app, "Audio source").set_value("Record with microphone").run()
     assert len(app.audio_input) == 1
     assert len(app.file_uploader) == 0
 
@@ -138,7 +174,7 @@ def test_uploaded_recurring_typing_gets_gentle_instrumental(app):
 def test_recorded_clip_is_analysed_like_an_upload(app):
     FakeClassifier.frames_by_label = {"Alarm": [1, 2, 3, 4, 5, 6]}
     consent(app)
-    app.radio[0].set_value("Record with microphone").run()
+    radio(app, "Audio source").set_value("Record with microphone").run()
     app.audio_input[0].upload("recording.wav", wav_bytes(), "audio/wav").run()
     assert not app.exception
     assert "Stronger masking audio" in recommendation(app)
@@ -234,6 +270,47 @@ def test_raising_the_speech_loudness_setting_changes_the_decision(app):
     loudness = next(s for s in app.slider if "minimum loudness" in s.label)
     loudness.set_value(-3).run()
     assert "No intervention recommended" in recommendation(app)
+
+
+# --- Trained detector (FR13) -------------------------------------------------
+
+
+def test_labels_are_the_default_detection_method(app):
+    assert radio(app, "Detection method").value == "YAMNet labels"
+
+
+def test_trained_detector_drives_its_categories(app):
+    FakeDetector.frames_by_category = {"clicking": [0, 2, 4, 6, 8]}
+    use_trained_detector(consent(app))
+    upload(app)
+    assert not app.exception
+    assert "Gentle instrumental audio" in recommendation(app)
+    evidence = app.table[1].value
+    clicking = evidence[evidence["Category"] == "Clicking and ticking"].iloc[0]
+    assert clicking["Peak label"] == "Trained detector: clicking"
+    assert clicking["Frames detected"] == f"5 of {NUM_FRAMES}"
+    assert any("trained detector" in c.value for c in app.caption)
+
+
+def test_trained_mode_ignores_yamnet_labels_for_its_categories(app):
+    FakeClassifier.frames_by_label = {"Typing": [0, 2, 4, 6, 8]}  # YAMNet hears typing
+    use_trained_detector(consent(app))
+    upload(app)
+    assert "No intervention recommended" in recommendation(app)
+
+
+def test_trained_mode_keeps_yamnet_labels_for_chewing(app):
+    FakeClassifier.frames_by_label = {"Chewing, mastication": [0, 2, 4, 6, 8]}
+    use_trained_detector(consent(app))
+    upload(app)
+    assert "Gentle instrumental audio" in recommendation(app)
+
+
+def test_top_sounds_table_lists_only_yamnet_labels(app):
+    FakeDetector.frames_by_category = {"alarms": list(range(NUM_FRAMES))}
+    use_trained_detector(consent(app))
+    upload(app)
+    assert not any(s.startswith("Trained detector") for s in app.table[0].value["Sound"])
 
 
 # --- Labels the model lacks (FR11) -------------------------------------------
